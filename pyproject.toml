@@ -1,0 +1,70 @@
+[tool.poetry]
+name = "vilocify-sdk"
+version = "0.3.0"
+description = "Vilocify SDK built atop APIv2"
+authors = ["Wolfgang Popp <popp.wolfgang@siemens.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "vilocify" }
+]
+
+[tool.poetry.scripts]
+vilocify = 'vilocify.cli:cli'
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.31.0"
+cyclonedx-python-lib = "^7.6.1"
+click = "^8.1.7"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+ruff = "^0.9.7"
+mypy = "^1.11.2"
+types-requests = "^2.32.0.20240914"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+log_cli = "True"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "C4",
+    "C90",
+    "DTZ",
+    "E",
+    "EXE",
+    "F",
+    "FIX",
+    "G",
+    "I",
+    "INP",
+    "LOG",
+    "N",
+    "PL",
+    "PT",
+    "PTH",
+    "RET",
+    "RUF",
+    "S",
+    "SIM",
+    "UP",
+    "W",
+    "YTT",
+    "TCH",
+    "ANN"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.ruff.lint.flake8-annotations]
+suppress-none-returning = true
