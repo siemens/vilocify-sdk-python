@@ -4,17 +4,15 @@
 #  SPDX-License-Identifier: MIT
 
 import abc
-import logging
-import os
 from collections.abc import Iterable, Iterator
 from enum import Enum
 from itertools import islice
 from typing import Any, ClassVar, NamedTuple, Self
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import urlparse
 
-import requests
+from vilocify import JSON, api_config
+from vilocify import http
 
-JSON = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 JSONDict = dict[str, JSON]
 Meta = JSONDict | None
 
@@ -106,38 +104,6 @@ class Attribute[T]:
         if Action.UPDATE not in self.serialize and self.api_attribute_name in obj._jsonapi_attributes:
             raise AttributeError("Cannot set write-once attribute")
         obj._jsonapi_attributes[self.api_attribute_name] = value
-
-
-class _APIConfig:
-    def __init__(self):
-        self._token = None
-        self.base_url = os.environ.get("VILOCIFY_API_BASE_URL", "https://portal.vilocify.com/api/v2")
-        self.api_host = _APIConfig._drop_path(self.base_url)
-        self.request_timeout_seconds = 20
-
-    @staticmethod
-    def _drop_path(url: str) -> str:
-        parts = urlparse(url)
-        return ParseResult(parts.scheme, parts.netloc, "", "", "", "").geturl()
-
-    @property
-    def token(self) -> str:
-        return self._token or os.environ.get("VILOCIFY_API_TOKEN", "")
-
-    @token.setter
-    def token(self, value: str):
-        self._token = value
-
-    @property
-    def headers(self) -> dict[str, str]:
-        return {
-            "Authorization": f"Bearer {self.token or ''}",
-            "Content-Type": "application/vnd.api+json",
-            "Accept": "application/vnd.api+json",
-        }
-
-
-api_config = _APIConfig()
 
 
 class Serializer[TModel: "Model"]:
@@ -284,12 +250,6 @@ class Serializer[TModel: "Model"]:
         return {"data": data}
 
 
-class RequestError(Exception):
-    def __init__(self, error_code: int, message: str):
-        self.error_code = error_code
-        self.message = message
-
-
 class UnmappedModelError(Exception):
     """Raised when trying to send a modifying request for a model instance without an ID."""
 
@@ -324,18 +284,6 @@ class Request[TModel: "Model"]:
         self.sorter: str | None = None
         self._page_size = 100
 
-    def _get(self, url: str, params: dict[str, str] | None = None) -> JSON:
-        return self._request("GET", url, params=params)
-
-    def _post(self, url: str, json: JSON) -> JSON:
-        return self._request("POST", url, json=json)
-
-    def _patch(self, url: str, json: JSON) -> JSON:
-        return self._request("PATCH", url, json=json)
-
-    def _delete(self, url: str, json: JSON) -> JSON:
-        return self._request("DELETE", url, json=json)
-
     @staticmethod
     def _inclusion_params[RelModel: "Model"](
         relationship_name: str, relationship_type: type[RelModel]
@@ -347,18 +295,6 @@ class Request[TModel: "Model"]:
 
         return params
 
-    def _request(self, verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
-        logging.debug("%s: url=%s, params=%s, json=%s", verb.upper(), url, params, json)
-        response = requests.request(
-            verb, url, headers=api_config.headers, timeout=api_config.request_timeout_seconds, json=json, params=params
-        )
-        if not response.ok:
-            raise RequestError(response.status_code, response.text)
-        response_json = response.json() if response.text else None
-        logging.debug("status_code=%s response=%s", response.status_code, response_json)
-        logging.debug("server-timing: %s", response.headers.get("Server-Timing", "n/a"))
-        return response_json
-
     def get(self, resource_id: str) -> TModel:
         jsonapi_type_name = self.model_class.jsonapi_type_name()
         url = urljoin(api_config.base_url, jsonapi_type_name, resource_id)
@@ -367,7 +303,7 @@ class Request[TModel: "Model"]:
         if fields:
             params[f"fields[{jsonapi_type_name}]"] = fields
 
-        obj = Serializer.deserialize_one(self.model_class, self._get(url, params))
+        obj = Serializer.deserialize_one(self.model_class, http.get(url, params))
         if obj is None:
             raise UnmappedModelError(f"Cannot get resource {jsonapi_type_name} with id {resource_id}")
         return obj
@@ -379,7 +315,7 @@ class Request[TModel: "Model"]:
         url = urljoin(api_config.base_url, jsonapi_type_name, resource_id, "relationships", relationship_name)
 
         params = self._inclusion_params(relationship_name, relationship_type)
-        return Serializer.deserialize_one(relationship_type, self._get(url, params))
+        return Serializer.deserialize_one(relationship_type, http.get(url, params))
 
     def __iter__(self) -> Iterator[TModel]:
         jsonapi_type_name = self.model_class.jsonapi_type_name()
@@ -393,12 +329,12 @@ class Request[TModel: "Model"]:
         if self.sorter:
             params["sort"] = self.sorter
 
-        response = self._get(url, params)
+        response = http.get(url, params)
         if response is None:
             return None
         yield from Serializer.deserialize_many(self.model_class, response)
         while (next_url := Serializer.deserialize_next_link(response)) is not None:
-            response = self._get(urljoin(api_config.api_host, next_url))
+            response = http.get(urljoin(api_config.api_host, next_url))
             yield from Serializer.deserialize_many(self.model_class, response)
 
     def all(self) -> list[TModel]:
@@ -437,12 +373,12 @@ class Request[TModel: "Model"]:
         )
         params = self._inclusion_params(relationship_name, relationship_type)
         params["page[size]"] = str(self._page_size)
-        response = self._get(url, params)
+        response = http.get(url, params)
         if response is None:
             return None
         yield from Serializer.deserialize_many(relationship_type, response)
         while (next_url := Serializer.deserialize_next_link(response)) is not None:
-            response = self._get(urljoin(api_config.api_host, next_url))
+            response = http.get(urljoin(api_config.api_host, next_url))
             yield from Serializer.deserialize_many(relationship_type, response)
 
     def where(self, attribute: str, operator: str, value: str | list[str]) -> "Request[TModel]":
@@ -470,7 +406,7 @@ class Request[TModel: "Model"]:
 
     def create(self, obj: TModel, meta: Meta = None):
         url = urljoin(api_config.base_url, self.model_class.jsonapi_type_name())
-        response = self._post(url, json=Serializer.serialize_one(obj, meta, Action.CREATE))
+        response = http.post(url, json=Serializer.serialize_one(obj, meta, Action.CREATE))
         res = Serializer.deserialize_one(self.model_class, response)
         if res is not None:
             obj._jsonapi_attributes = res._jsonapi_attributes
@@ -480,7 +416,7 @@ class Request[TModel: "Model"]:
         if obj.id is None:
             raise UnmappedModelError("Model is unmapped and has no ID")
         url = urljoin(api_config.base_url, self.model_class.jsonapi_type_name(), obj.id)
-        response = self._patch(url, json=Serializer.serialize_one(obj, meta, Action.UPDATE))
+        response = http.patch(url, json=Serializer.serialize_one(obj, meta, Action.UPDATE))
         res = Serializer.deserialize_one(self.model_class, response)
         if res is not None:
             obj._jsonapi_attributes = res._jsonapi_attributes
@@ -492,13 +428,13 @@ class Request[TModel: "Model"]:
         url = urljoin(
             api_config.base_url, self.model_class.jsonapi_type_name(), obj.id, "relationships", relationship_name
         )
-        self._post(url, json=Serializer.serialize_many_related(*related))
+        http.post(url, json=Serializer.serialize_many_related(*related))
 
     def delete(self, obj: TModel, meta: Meta = None):
         if obj.id is None:
             raise UnmappedModelError("Model is unmapped and has no ID")
         url = urljoin(api_config.base_url, self.model_class.jsonapi_type_name(), obj.id)
-        self._delete(url, Serializer.serialize_meta(meta))
+        http.delete(url, Serializer.serialize_meta(meta))
 
 
 class ModelMeta(type):

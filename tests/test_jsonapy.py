@@ -34,7 +34,7 @@ def test_raise_writing_read_only_attribute():
         t.created_at = "today"
 
 
-def test_assign_unkown_attribute():
+def test_assign_unknown_attribute():
     class Test(Model):
         attr = Attribute("attr")
 
