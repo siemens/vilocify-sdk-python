@@ -3,7 +3,7 @@
 
 import pytest
 
-from vilocify.jsonapy import api_config
+from vilocify import api_config
 
 
 @pytest.fixture(autouse=True)

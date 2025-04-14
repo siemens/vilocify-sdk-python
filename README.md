@@ -24,7 +24,7 @@ You can generate an API Token at https://ui.portal.vilocify.com/api-tokens.
 By default, authentication for the SDK is configured through the `VILOCIFY_API_TOKEN` environment variable.
 Alternatively, the token can be set programmatically:
 ```python
-from vilocify.jsonapy import api_config
+from vilocify import api_config
 api_config.token = "<your token here>"
 ```
 

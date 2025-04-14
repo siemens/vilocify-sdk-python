@@ -120,7 +120,7 @@ def test_repr():
 
 
 def test_api_token_config():
-    from vilocify.jsonapy import api_config
+    from vilocify import api_config
 
     if "VILOCIFY_API_TOKEN" in os.environ:
         del os.environ["VILOCIFY_API_TOKEN"]
