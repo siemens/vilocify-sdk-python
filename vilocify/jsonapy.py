@@ -10,8 +10,7 @@ from itertools import islice
 from typing import Any, ClassVar, NamedTuple, Self
 from urllib.parse import urlparse
 
-from vilocify import JSON, api_config
-from vilocify import http
+from vilocify import JSON, api_config, http
 
 JSONDict = dict[str, JSON]
 Meta = JSONDict | None

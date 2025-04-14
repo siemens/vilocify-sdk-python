@@ -24,7 +24,7 @@ run_linter() {
 
     tmpfile=$(mktemp -p /tmp lint-sh.XXXXXX)
 
-    "$@" > "$tmpfile" 2>&1
+    poetry run "$@" > "$tmpfile" 2>&1
     exit_code=$?
     if [ $exit_code -eq 0 ]; then
         printc "green" "Succeeded."

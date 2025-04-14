@@ -2,7 +2,7 @@
 #  SPDX-License-Identifier: MIT
 
 import os
-from urllib.parse import urlparse, ParseResult
+from urllib.parse import ParseResult, urlparse
 
 import requests
 
@@ -19,12 +19,14 @@ class _APIConfig:
         self.request_timeout_seconds = 20
 
         session = requests.Session()
-        session.headers.update({
-            "Content-Type": "application/vnd.api+json",
-            "Accept": "application/vnd.api+json",
-            "Authorization": f"Bearer {self.token}",
-            "User-Agent": f"vilocify-sdk-python/{__version__}",
-        })
+        session.headers.update(
+            {
+                "Content-Type": "application/vnd.api+json",
+                "Accept": "application/vnd.api+json",
+                "Authorization": f"Bearer {self.token}",
+                "User-Agent": f"vilocify-sdk-python/{__version__}",
+            }
+        )
         self.client = session
 
     @staticmethod
