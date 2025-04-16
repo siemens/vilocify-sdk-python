@@ -137,6 +137,15 @@ ml = MonitoringList.first()
 ml.components.extend(Component(id="3"), Component(id="5"))  # Adds component with IDs 1 and 2, and immediately sends the change to the API backend
 ```
 
+### Proxy setup
+The SDK uses a `requests.Session()` to handle its HTTP requests, which picks up the proxy settings from the `https_proxy` environment variable as documented [here](https://requests.readthedocs.io/en/latest/user/advanced/#proxies).
+To override that behavior do the following:
+```python
+from vilocify import api_config
+api_config.client.trust_env = False
+api_config.client.proxies = { "https": "https://your.proxy:8080" }
+```
+
 ## Contributing
 See [Contributing.md](docs/CONTRIBUTING.md).
 
