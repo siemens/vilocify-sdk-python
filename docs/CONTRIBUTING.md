@@ -7,7 +7,7 @@ We welcome contributions in several forms, e.g.
 - Coding
 - Reproducing Bugs
 
-Please check [Issues](https://github.com/siemens/vilocify-sdk/issues) and look for unassigned ones or create a new one.
+Please check [Issues](https://github.com/siemens/vilocify-sdk-python/issues) and look for unassigned ones or create a new one.
 
 ## Guidelines
 
@@ -19,8 +19,8 @@ Please check [Issues](https://github.com/siemens/vilocify-sdk/issues) and look f
 - Follow our [commit message](#commit-message) style for the title and description of your pull request.
     This allows maintainers to use your title and description of the pull request as commit message.
 - We tag releases on the main branch.
-- CI checks must succeed before merging to `main`
-- A maintainer listed in [CODEOWNERS](/docs/CODEOWNERS) must review and merge the pull request
+- CI checks must succeed before merging to `main`.
+- A maintainer listed in [CODEOWNERS](/docs/CODEOWNERS) must review and merge the pull request.
 
 ### Commit Message
 
@@ -37,3 +37,15 @@ We follow the commit message style of [cbeams](https://cbea.ms/git-commit/). The
 Commit messages on pull requests can deviate from this style, because commits get squashed when merged to `main` and maintainers can override the commit message.
 However, give your pull request a subject and body in this style.
 Commits on the main branch must follow this styleguide!
+
+Commit messages must have a `Signed-off-by` trailer certifying that the committer has the rights to submit the work under the project's license and agrees to the [Developer Certificate of Origin](https://developercertificate.org)
+
+### Codestyle
+For filetypes not listed below follow the generic settings in `.editorconfig`.
+
+#### Python
+We follow the [Ruff Formatter style](https://docs.astral.sh/ruff/formatter/), which is enforced in CI.
+
+#### Markdown
+We use one line per sentence, and therefore don't enforce a maximum line-length for `.md` files.
+This keeps diffs cleaner and helps to quicker understand the structure of a paragraph when reading the raw `.md` file.
