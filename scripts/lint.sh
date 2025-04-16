@@ -39,7 +39,7 @@ run_linter() {
 
 run_linter ruff check
 run_linter ruff format --diff
-run_linter mypy vilocify
+run_linter mypy vilocify tests
 run_linter pytest
 
 exit $EXIT_CODE
