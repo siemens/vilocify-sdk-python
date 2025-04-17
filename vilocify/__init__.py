@@ -5,8 +5,9 @@ import os
 from urllib.parse import ParseResult, urlparse
 
 import requests
+import importlib.metadata
 
-__version__ = "0.4.0"
+__version__ = importlib.metadata.version("vilocify-sdk")
 
 JSON = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 
