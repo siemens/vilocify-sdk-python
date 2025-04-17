@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vilocify-sdk"
-version = "0.3.0"
+version = "0.4.0"
 description = "Vilocify SDK built atop APIv2"
 authors = ["Wolfgang Popp <popp.wolfgang@siemens.com>"]
 license = "MIT"
