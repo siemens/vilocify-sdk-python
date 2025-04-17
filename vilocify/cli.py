@@ -6,6 +6,7 @@
 import io
 import json
 import logging
+import sys
 import textwrap
 from datetime import UTC, datetime, timedelta
 
@@ -13,7 +14,7 @@ import click
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom import Component as BomComponent
 
-import vilocify
+from vilocify.http import JSONAPIRequestError, RequestError
 from vilocify.models import (
     Component,
     ComponentRequest,
@@ -36,9 +37,8 @@ MIT License
 
 @click.group()
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "ERROR"]), default="INFO")
-@click.version_option(version=vilocify.__version__, message=version_text)
 def cli(log_level: str):
-    logging.basicConfig(level=log_level)
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
 
 @cli.command()
@@ -171,5 +171,22 @@ def component_request(state: str):
         print()
 
 
+def main():
+    try:
+        exit_code = cli.main(standalone_mode=False)
+        sys.exit(exit_code)
+    except JSONAPIRequestError as e:
+        logging.error("%s - %s", e.error_code, e.message)
+        for error in e.errors:
+            logging.error("%s. Detail: %s", error.title, error.detail)
+        sys.exit(1)
+    except RequestError as e:
+        logging.error("%s - %s", e.error_code, e.message)
+        sys.exit(1)
+    except Exception as e:
+        logging.error("Unknown error occurred", exc_info=e)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    cli()
+    main()
