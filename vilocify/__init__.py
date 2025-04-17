@@ -1,11 +1,11 @@
 #  SPDX-FileCopyrightText: 2025 Siemens AG
 #  SPDX-License-Identifier: MIT
 
+import importlib.metadata
 import os
 from urllib.parse import ParseResult, urlparse
 
 import requests
-import importlib.metadata
 
 __version__ = importlib.metadata.version("vilocify-sdk")
 

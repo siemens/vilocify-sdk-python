@@ -26,11 +26,13 @@ from vilocify.models import (
 class MissingPurlError(Exception):
     """Raised when importing an SBOM component that has no PURL"""
 
+
 version_text = """Vilocify Python SDK, version %(version)s
 
 Copyright (C) 2025 Siemens AG
 MIT License
 """
+
 
 @click.group()
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "ERROR"]), default="INFO")
