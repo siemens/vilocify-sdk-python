@@ -13,6 +13,7 @@ import click
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom import Component as BomComponent
 
+import vilocify
 from vilocify.models import (
     Component,
     ComponentRequest,
@@ -26,8 +27,16 @@ class MissingPurlError(Exception):
     """Raised when importing an SBOM component that has no PURL"""
 
 
+version_text = """Vilocify Python SDK, version %(version)s
+
+Copyright (C) 2025 Siemens AG
+MIT License
+"""
+
+
 @click.group()
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "ERROR"]), default="INFO")
+@click.version_option(version=vilocify.__version__, message=version_text)
 def cli(log_level: str):
     logging.basicConfig(level=log_level)
 
