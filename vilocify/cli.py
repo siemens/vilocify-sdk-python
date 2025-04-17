@@ -6,6 +6,7 @@
 import io
 import json
 import logging
+import sys
 import textwrap
 from datetime import UTC, datetime, timedelta
 
@@ -13,6 +14,7 @@ import click
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom import Component as BomComponent
 
+from vilocify.http import JSONAPIRequestError, RequestError
 from vilocify.models import (
     Component,
     ComponentRequest,
@@ -29,7 +31,7 @@ class MissingPurlError(Exception):
 @click.group()
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "ERROR"]), default="INFO")
 def cli(log_level: str):
-    logging.basicConfig(level=log_level)
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
 
 @cli.command()
@@ -162,5 +164,21 @@ def component_request(state: str):
         print()
 
 
+def main():
+    try:
+        exit_code = cli.main(standalone_mode=False)
+        sys.exit(exit_code)
+    except JSONAPIRequestError as e:
+        for error in e.errors:
+            logging.error("%s - %s", e.error_code, error.title)
+        sys.exit(1)
+    except RequestError as e:
+        logging.error("%s - %s", e.message, e.message)
+        sys.exit(1)
+    except Exception as e:
+        logging.error("Unknown error occurred", exc_info=e)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    cli()
+    main()
