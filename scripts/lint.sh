@@ -39,6 +39,7 @@ run_linter() {
 
 run_linter ruff check
 run_linter ruff format --diff
+run_linter ec
 run_linter mypy vilocify tests
 run_linter pytest
 
