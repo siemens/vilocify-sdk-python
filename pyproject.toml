@@ -15,7 +15,7 @@ vilocify = 'vilocify.cli:main'
 [tool.poetry.dependencies]
 python = "^3.12"
 requests = "^2.31.0"
-cyclonedx-python-lib = "^7.6.1"
+cyclonedx-python-lib = "^9.0.0"
 click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
