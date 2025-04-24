@@ -1,0 +1,12 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "docker:pinDigests",
+        "group:allNonMajor",
+        ":prHourlyLimitNone",
+        ":prConcurrentLimitNone",
+        ":disableDependencyDashboard",
+        ":separateMultipleMajorReleases"
+    ]
+}
