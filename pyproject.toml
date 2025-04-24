@@ -20,7 +20,7 @@ click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
-ruff = "^0.9.7"
+ruff = "^0.11.0"
 mypy = "^1.11.2"
 types-requests = "^2.32.0.20240914"
 requests-mock = "^1.12.1"
