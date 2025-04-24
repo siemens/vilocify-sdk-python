@@ -8,6 +8,8 @@ import requests
 
 from vilocify import JSON, api_config
 
+logger = logging.getLogger(__name__)
+
 
 class RequestError(Exception):
     def __init__(self, error_code: int, message: str):
@@ -42,7 +44,7 @@ class JSONAPIRequestError(RequestError):
 
 
 def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
-    logging.debug("%s: url=%s, params=%s, json=%s", verb.upper(), url, params, json)
+    logger.debug("%s: url=%s, params=%s, json=%s", verb.upper(), url, params, json)
     response = api_config.client.request(
         verb, url, timeout=api_config.request_timeout_seconds, json=json, params=params
     )
@@ -53,9 +55,9 @@ def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | No
         raise JSONAPIRequestError.from_response(response)
 
     response_json = response.json() if response.text else None
-    logging.debug("status_code=%s response=%s", response.status_code, response_json)
+    logger.debug("status_code=%s response=%s", response.status_code, response_json)
     if "Server-Timing" in response.headers:
-        logging.debug("server-timing: %s", response.headers["Server-Timing"])
+        logger.debug("server-timing: %s", response.headers["Server-Timing"])
 
     return response_json
 

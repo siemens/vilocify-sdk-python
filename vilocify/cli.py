@@ -23,9 +23,7 @@ from vilocify.models import (
     Vulnerability,
 )
 
-
-class MissingPurlError(Exception):
-    """Raised when importing an SBOM component that has no PURL"""
+logger = logging.getLogger(__name__)
 
 
 version_text = """Vilocify Python SDK, version %(version)s
@@ -33,6 +31,10 @@ version_text = """Vilocify Python SDK, version %(version)s
 Copyright (C) 2025 Siemens AG
 MIT License
 """
+
+
+class MissingPurlError(Exception):
+    """Raised when importing an SBOM component that has no PURL"""
 
 
 @click.group()
@@ -141,7 +143,7 @@ def monitoringlist(name: str, comment: str, from_cyclonedx: io.FileIO):
         try:
             c = _find_vilocify_component(bom_component)
         except MissingPurlError:
-            logging.warning("Purl for BOM component %s is missing", bom_component.name)
+            logger.warning("Purl for BOM component %s is missing", bom_component.name)
         else:
             if c is not None:
                 components.append(c)
@@ -176,15 +178,15 @@ def main():
         exit_code = cli.main(standalone_mode=False)
         sys.exit(exit_code)
     except JSONAPIRequestError as e:
-        logging.error("%s - %s", e.error_code, e.message)
+        logger.error("%s - %s", e.error_code, e.message)
         for error in e.errors:
-            logging.error("%s. Detail: %s", error.title, error.detail)
+            logger.error("%s. Detail: %s", error.title, error.detail)
         sys.exit(1)
     except RequestError as e:
-        logging.error("%s - %s", e.error_code, e.message)
+        logger.error("%s - %s", e.error_code, e.message)
         sys.exit(1)
     except Exception as e:
-        logging.error("Unknown error occurred", exc_info=e)
+        logger.error("Unknown error occurred", exc_info=e)
         sys.exit(1)
 
 
