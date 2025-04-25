@@ -16,6 +16,7 @@ from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom import Component as BomComponent
 
 from vilocify.http import JSONAPIRequestError, RequestError
+from vilocify.match import MissingPurlError, match_bom_component
 from vilocify.models import (
     Component,
     ComponentRequest,
@@ -26,16 +27,11 @@ from vilocify.models import (
 
 logger = logging.getLogger(__name__)
 
-
 version_text = """Vilocify Python SDK, version %(version)s
 
 Copyright (C) 2025 Siemens AG
 MIT License
 """
-
-
-class MissingPurlError(Exception):
-    """Raised when importing an SBOM component that has no PURL"""
 
 
 class BadCycloneDXFileError(Exception):
@@ -72,44 +68,13 @@ def notifications(monitoring_list: str, since: datetime):
         print(f"No new notifications for monitoringlist #{monitoring_list} since {since.isoformat()}.")
 
 
-def _vilocify_matcher_for_bom_component(bom_component: BomComponent) -> tuple[str | None, str | None]:
-    purl = bom_component.purl
-    if purl is None:
-        raise MissingPurlError(f"purl is missing for BOM component {bom_component}")
-    vilocify_name_prefixes = {
-        "cargo": "Rust Crate",
-        "gem": "RubyGem",
-        "golang": "Go Package",
-        "npm": "Node.js Package",
-        "nuget": "NuGet Package",
-        "pypi": "Python Package",
-    }
-    if purl.type in vilocify_name_prefixes:
-        version = bom_component.version
-        if version is not None:
-            version = version.lstrip("v")
-        return (
-            f"{vilocify_name_prefixes[purl.type]}: {purl.namespace + '/' if purl.namespace else ''}{purl.name}",
-            version,
-        )
-    if purl.type == "rpm" and purl.namespace == "fedora":
-        return f"Fedora Package: {purl.name}", "All Versions"
-    if purl.type == "deb":
-        if purl.namespace == "debian":
-            return f"Debian Package: {purl.name}", "All Versions"
-        if purl.namespace == "ubuntu":
-            return f"Ubuntu Package: {purl.name}", "All Versions"
-
-    return None, None
-
-
 def _from_component_request(bom_component: BomComponent) -> Component | None:
     cr = ComponentRequest.where("componentUrl", "eq", str(bom_component.purl)).first()
     if cr is None:
-        name, _ = _vilocify_matcher_for_bom_component(bom_component)
+        name, version = match_bom_component(bom_component)
         cr = ComponentRequest(
             name=name or bom_component.name,
-            version=bom_component.version,
+            version=version or bom_component.version,
             component_url=str(bom_component.purl),
             comment="Auto-created by vilocify-sdk-python",
         )
@@ -119,7 +84,7 @@ def _from_component_request(bom_component: BomComponent) -> Component | None:
 
 
 def _find_vilocify_component(bom_component: BomComponent) -> Component | None:
-    vilocify_name, vilocify_version = _vilocify_matcher_for_bom_component(bom_component)
+    vilocify_name, vilocify_version = match_bom_component(bom_component)
     if vilocify_name is not None and vilocify_version is not None:
         component = (
             Component.where("name", "eq", vilocify_name)
