@@ -57,6 +57,18 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
         },
     },
     "rpm": {
+        "almalinux": {
+            None: "AlmaLinux Package",
+            "almalinux-8": "AlmaLinux 8 Package",
+            "almalinux-9": "AlmaLinux 9 Package",
+            "almalinux-10": "AlmaLinux 10 Package",
+        },
+        "amzn": {
+            None: "Amazon Linux Package",
+            "amzn-2018": "Amazon Linux Package",
+            "amzn-2023": "Amazon Linux 2023 Package",
+            "amzn-2": "Amazon Linux 2 Package",
+        },
         "fedora": {
             None: "Fedora Package",
             "fedora-40": "Fedora 40 Package",
@@ -65,6 +77,12 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
         },
         "opensuse": {
             None: "openSUSE Package",
+        },
+        "ol": {
+            None: "Oracle Linux OS Package",
+            "ol-7": "Oracle Linux OS 7 Package",
+            "ol-8": "Oracle Linux OS 8 Package",
+            "ol-9": "Oracle Linux OS 9 Package",
         },
         "redhat": {
             None: "RHEL Package",
@@ -76,24 +94,6 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
             None: "Rocky Linux Package",
             "rocky-8": "Rocky Linux 8 Package",
             "rocky-9": "Rocky Linux 9 Package",
-        },
-        "almalinux": {
-            None: "AlmaLinux Package",
-            "almalinux-8": "AlmaLinux 8 Package",
-            "almalinux-9": "AlmaLinux 9 Package",
-            "almalinux-10": "AlmaLinux 10 Package",
-        },
-        "ol": {
-            None: "Oracle Linux OS Package",
-            "ol-7": "Oracle Linux OS 7 Package",
-            "ol-8": "Oracle Linux OS 8 Package",
-            "ol-9": "Oracle Linux OS 9 Package",
-        },
-        "amzn": {
-            None: "Amazon Linux Package",
-            "amzn-2018": "Amazon Linux Package",
-            "amzn-2023": "Amazon Linux 2023 Package",
-            "amzn-2": "Amazon Linux 2 Package",
         },
         "sles": {
             None: "SUSE Linux Enterprise Server Package",
