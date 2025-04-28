@@ -384,6 +384,9 @@ class Request[TModel: "Model"]:
         if isinstance(value, list):
             value = ",".join(value)
 
+        if not isinstance(value, str):
+            raise TypeError(f"value must be str or list, not {type(value)}")
+
         self.filters.append(Filter(attribute, operator, value))
         return self
 

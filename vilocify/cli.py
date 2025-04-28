@@ -11,6 +11,7 @@ import textwrap
 from datetime import UTC, datetime, timedelta
 
 import click
+from click import BadParameter
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom import Component as BomComponent
 
@@ -35,6 +36,10 @@ MIT License
 
 class MissingPurlError(Exception):
     """Raised when importing an SBOM component that has no PURL"""
+
+
+class BadCycloneDXFileError(Exception):
+    """Raised on unsupported file extensions of a CycloneDX file"""
 
 
 @click.group()
@@ -80,9 +85,12 @@ def _vilocify_matcher_for_bom_component(bom_component: BomComponent) -> tuple[st
         "pypi": "Python Package",
     }
     if purl.type in vilocify_name_prefixes:
+        version = bom_component.version
+        if version is not None:
+            version = version.lstrip("v")
         return (
             f"{vilocify_name_prefixes[purl.type]}: {purl.namespace + '/' if purl.namespace else ''}{purl.name}",
-            bom_component.version,
+            version,
         )
     if purl.type == "rpm" and purl.namespace == "fedora":
         return f"Fedora Package: {purl.name}", "All Versions"
@@ -103,7 +111,7 @@ def _from_component_request(bom_component: BomComponent) -> Component | None:
             name=name or bom_component.name,
             version=bom_component.version,
             component_url=str(bom_component.purl),
-            comment="Auto-created by jsona.py",
+            comment="Auto-created by vilocify-sdk-python",
         )
         cr.create()
 
@@ -127,17 +135,24 @@ def _find_vilocify_component(bom_component: BomComponent) -> Component | None:
 
 @cli.command()
 @click.option("--name", required=True)
-@click.option("--comment")
+@click.option("--comment", default="")
 @click.option("--from-cyclonedx", type=click.File("rt"), required=True)
 def monitoringlist(name: str, comment: str, from_cyclonedx: io.FileIO):
-    """Creates or updates a monitoring list from a CycloneDX json file.
+    """Creates or updates a monitoring list from a CycloneDX JSON or XML file.
+
+    The JSON or XML filetype is identified by the filename ending.
 
     Some components might not be found on Vilocify. A ComponentRequest is created for components that cannot be
     identified. ComponentRequests might need several days to get processed and integrated into Vilocify. Running the
     same command repeatedly will update the monitoring list once the component requests are processed.
     """
 
-    bom = Bom.from_json(data=json.load(from_cyclonedx))  # type: ignore[attr-defined]
+    if from_cyclonedx.name.endswith(".json"):
+        bom = Bom.from_json(data=json.load(from_cyclonedx))  # type: ignore[attr-defined]
+    elif from_cyclonedx.name.endswith(".xml"):
+        bom = Bom.from_xml(data=from_cyclonedx)  # type: ignore[attr-defined]
+    else:
+        raise BadCycloneDXFileError("The CyclondeDX file must end with .json or .xml.")
     components = []
     for bom_component in bom.components:
         try:
@@ -164,9 +179,9 @@ def monitoringlist(name: str, comment: str, from_cyclonedx: io.FileIO):
     multiple=True,
     default=["unprocessed", "rejected", "mapped"],
 )
-def component_request(state: str):
+def component_request(state: tuple[str]):
     """List component requests by processing state."""
-    for cr in ComponentRequest.where("state", "in", state):
+    for cr in ComponentRequest.where("state", "in", list(state)):
         print("title:", cr.vendor, "-", cr.name, "-", cr.version)
         print("URL:", cr.component_url)
         print("state:", cr.state)
@@ -184,6 +199,9 @@ def main():
         sys.exit(1)
     except RequestError as e:
         logger.error("%s - %s", e.error_code, e.message)
+        sys.exit(1)
+    except (BadCycloneDXFileError, FileNotFoundError, BadParameter) as e:
+        logger.error("%s", e)
         sys.exit(1)
     except Exception as e:
         logger.error("Unknown error occurred", exc_info=e)
