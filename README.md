@@ -3,20 +3,23 @@
 The Python SDK for [Vilocify](https://docs.vilocify.com), built using Vilocify's APIv2 JSON:API.
 This project also includes an example CLI tool to manage Vilocify Monitoring Lists.
 
-## Installation
-
-```bash
-pip install vilocify-sdk
-```
+## Prerequisites
+The Vilocify SDK needs Python 3.12 or newer.
 
 ## CLI usage
-Run `vilocify --help` for documentation of the bundled example CLI tool.
+1. Get [pipx](https://pipx.pypa.io/stable/)
+2. Install the CLI with `pipx install vilocify-sdk`
+3. Run `vilocify --help` for documentation of the bundled example CLI tool
 
 ## SDK usage
 The SDK is built on Vilocify's API.
 We recommend you also take a quick look at the raw API docs at https://portal.vilocify.com/documentation.
 In particular, study the "API resources" section and `filter[...][...]` parameters of main resources.
 Those will come in handy for understanding the models of the SDK and arguments that can be used in `.where()` methods.
+
+### Installation
+Get `vilocify-sdk` from (PyPI)[https://pypi.org/project/vilocify-sdk/].
+If you use [Poetry](https://python-poetry.org/docs/) get it with `poetry add vilocify-sdk`.
 
 ### Authentication
 You can generate an API Token at https://ui.portal.vilocify.com/api-tokens.
