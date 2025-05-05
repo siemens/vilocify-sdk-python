@@ -78,6 +78,7 @@ def test_unknown_500_response_without_body(requests_mock: rm.Mocker):
 
     assert e.value.message == "Encountered unknown error. No error details were provided from the server."
 
+
 def test_unknown_500_response_without_body_and_header(requests_mock: rm.Mocker):
     url = "https://portal.vilocify.com/api/v2/componentRequests"
     requests_mock.get(url, status_code=500)
