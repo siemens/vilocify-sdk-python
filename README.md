@@ -18,7 +18,7 @@ In particular, study the "API resources" section and `filter[...][...]` paramete
 Those will come in handy for understanding the models of the SDK and arguments that can be used in `.where()` methods.
 
 ### Installation
-Get `vilocify-sdk` from (PyPI)[https://pypi.org/project/vilocify-sdk/].
+Get `vilocify-sdk` from [PyPI](https://pypi.org/project/vilocify-sdk/).
 If you use [Poetry](https://python-poetry.org/docs/) get it with `poetry add vilocify-sdk`.
 
 ### Authentication
