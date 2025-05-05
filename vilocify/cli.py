@@ -25,6 +25,8 @@ from vilocify.models import (
     Vulnerability,
 )
 
+ComponentCache = dict[tuple[str, str], Component]
+
 logger = logging.getLogger(__name__)
 
 version_text = """Vilocify Python SDK, version %(version)s
@@ -68,73 +70,112 @@ def notifications(monitoring_list: str, since: datetime):
         print(f"No new notifications for monitoringlist #{monitoring_list} since {since.isoformat()}.")
 
 
-def _from_component_request(bom_component: BomComponent) -> Component | None:
-    cr = ComponentRequest.where("componentUrl", "eq", str(bom_component.purl)).first()
-    if cr is None:
-        name, version = match_bom_component(bom_component)
-        cr = ComponentRequest(
-            name=name or bom_component.name,
-            version=version or bom_component.version,
-            component_url=str(bom_component.purl),
-            comment="Auto-created by vilocify-sdk-python",
-        )
-        cr.create()
-
-    return cr.component
-
-
-def _find_vilocify_component(bom_component: BomComponent) -> Component | None:
+def _find_vilocify_component(cache: ComponentCache, bom_component: BomComponent) -> Component | None:
     vilocify_name, vilocify_version = match_bom_component(bom_component)
     if vilocify_name is not None and vilocify_version is not None:
-        component = (
+        if (k := (vilocify_name, vilocify_version)) in cache:
+            return cache[k]
+
+        return (
             Component.where("name", "eq", vilocify_name)
             .where("version", "eq", vilocify_version)
             .where("active", "eq", "true")
             .first()
         )
-        if component is not None:
-            return component
 
-    return _from_component_request(bom_component)
+    return None
+
+
+def _load_bom(file: io.FileIO) -> Bom:
+    if file.name.endswith(".json"):
+        return Bom.from_json(data=json.load(file))  # type: ignore[attr-defined]
+
+    if file.name.endswith(".xml"):
+        return Bom.from_xml(data=file)  # type: ignore[attr-defined]
+
+    raise BadCycloneDXFileError("The CyclondeDX file must end with .json or .xml.")
+
+
+def _load_ml(name: str, comment: str) -> MonitoringList:
+    ml = MonitoringList.where("name", "eq", name).where("comment", "eq", comment).first()
+    if ml is None:
+        logger.info("No monitoring list with given name and comment found. Creating new list.")
+        ml = MonitoringList(name=name, comment=comment)
+        ml.create()
+
+    logger.info("Using monitoring list %s", ml.id)
+    return ml
+
+
+def _match_bom(cache: ComponentCache, bom: Bom) -> tuple[list[Component], list[BomComponent]]:
+    components = []
+    unidentified_components = []
+    for bom_component in bom.components:
+        try:
+            c = _find_vilocify_component(cache, bom_component)
+        except MissingPurlError:
+            logger.warning("Ignoring BOM component %s due to missing PURL", bom_component.name)
+        else:
+            if c is not None:
+                logger.info("Found component %s for %s", c.id, bom_component.purl)
+                components.append(c)
+            else:
+                unidentified_components.append(bom_component)
+
+    return components, unidentified_components
 
 
 @cli.command()
 @click.option("--name", required=True)
 @click.option("--comment", default="")
+@click.option("--yes", is_flag=True)
 @click.option("--from-cyclonedx", type=click.File("rt"), required=True)
-def monitoringlist(name: str, comment: str, from_cyclonedx: io.FileIO):
+def monitoringlist(name: str, comment: str, yes: bool, from_cyclonedx: io.FileIO):
     """Creates or updates a monitoring list from a CycloneDX JSON or XML file.
 
-    The JSON or XML filetype is identified by the filename ending.
+    The monitoring list is identified by the given name and comment. Changing the name or comment between runs will
+    create a new monitoring list. The JSON or XML filetype is identified by the filename ending.
 
     Some components might not be found on Vilocify. A ComponentRequest is created for components that cannot be
     identified. ComponentRequests might need several days to get processed and integrated into Vilocify. Running the
     same command repeatedly will update the monitoring list once the component requests are processed.
     """
 
-    if from_cyclonedx.name.endswith(".json"):
-        bom = Bom.from_json(data=json.load(from_cyclonedx))  # type: ignore[attr-defined]
-    elif from_cyclonedx.name.endswith(".xml"):
-        bom = Bom.from_xml(data=from_cyclonedx)  # type: ignore[attr-defined]
-    else:
-        raise BadCycloneDXFileError("The CyclondeDX file must end with .json or .xml.")
-    components = []
-    for bom_component in bom.components:
-        try:
-            c = _find_vilocify_component(bom_component)
-        except MissingPurlError:
-            logger.warning("Purl for BOM component %s is missing", bom_component.name)
-        else:
-            if c is not None:
-                components.append(c)
+    component_requests = []
+    bom = _load_bom(from_cyclonedx)
+    ml = _load_ml(name, comment)
+    components_cache = {(c.name, c.version): c for c in ml.components}
+    components, unidentified_components = _match_bom(components_cache, bom)
 
-    ml = MonitoringList.where("name", "eq", name).where("comment", "eq", comment).first()
-    if ml is None:
-        ml = MonitoringList(name=name, comment=comment)
-        ml.create()
+    for bom_component in unidentified_components:
+        cr = ComponentRequest.where("componentUrl", "eq", str(bom_component.purl)).first()
+        if cr is None:
+            component_name, version = match_bom_component(bom_component)
+            cr = ComponentRequest(
+                name=component_name or bom_component.name,
+                version=version or bom_component.version,
+                component_url=str(bom_component.purl),
+                comment="Auto-created by vilocify-sdk-python",
+            )
+            component_requests.append(cr)
+        elif (c := cr.component) is not None:
+            logger.info("Found component %s for %s through component request %s", c.id, bom_component.purl, cr.id)
+            components.append(c)
+        elif cr.state in ("unprocessed", "rejected"):
+            logger.info("The component request %s for %s is %s", cr.id, bom_component.purl, cr.state)
+
+    if component_requests:
+        logger.info(
+            "%d components could not be identified directly or through existing component requests.",
+            len(component_requests),
+        )
+        if yes or click.prompt(f"\nCreate {len(component_requests)} component requests? (y/n)", type=bool):
+            for cr in component_requests:
+                cr.create()
 
     ml.components = components
     ml.update()
+    logger.info("Finished updating monitoring list %s", ml.id)
 
 
 @cli.command()
