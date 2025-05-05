@@ -34,13 +34,16 @@ class JSONAPIRequestError(RequestError):
         self.errors = errors
 
     @staticmethod
-    def from_response(response: requests.Response) -> "JSONAPIRequestError":
-        errors = [JSONAPIError.from_dict(error) for error in response.json()["errors"]]
+    def from_response(code: int, response_json: JSON) -> "JSONAPIRequestError":
+        errors = []
+        if isinstance(response_json, dict) and isinstance((raw_errors := response_json.get("errors")), list):
+            errors = [JSONAPIError.from_dict(error) for error in raw_errors if isinstance(error, dict)]
+
         if errors:
             message = f"Encountered errors: {', '.join(f"'{e.title}'" for e in errors)}"
         else:
-            message = "Encountered unknown error. No error details were provided from the REST API."
-        return JSONAPIRequestError(response.status_code, message, errors)
+            message = "Encountered unknown error. No error details were provided from the server."
+        return JSONAPIRequestError(code, message, errors)
 
 
 def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
@@ -48,13 +51,17 @@ def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | No
     response = api_config.client.request(
         verb, url, timeout=api_config.request_timeout_seconds, json=json, params=params
     )
-    if not response.headers.get("Content-Type", "").startswith("application/vnd.api+json"):
+    if response.content and not response.headers.get("Content-Type", "").startswith("application/vnd.api+json"):
         raise RequestError(response.status_code, "Unsupported content type in server response.")
 
-    if not response.ok:
-        raise JSONAPIRequestError.from_response(response)
+    try:
+        response_json = response.json()
+    except requests.exceptions.JSONDecodeError:
+        response_json = None
 
-    response_json = response.json() if response.text else None
+    if not response.ok:
+        raise JSONAPIRequestError.from_response(response.status_code, response_json)
+
     logger.debug("status_code=%s response=%s", response.status_code, response_json)
     if "Server-Timing" in response.headers:
         logger.debug("server-timing: %s", response.headers["Server-Timing"])
