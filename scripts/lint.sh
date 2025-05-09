@@ -37,6 +37,7 @@ run_linter() {
     rm "$tmpfile"
 }
 
+run_linter poetry check --lock --strict
 run_linter ruff check
 run_linter ruff format --diff
 run_linter ec

@@ -1,22 +1,30 @@
-[tool.poetry]
+[project]
 name = "vilocify-sdk"
 version = "0.4.0"
-description = "Vilocify SDK built atop APIv2"
-authors = ["Wolfgang Popp <popp.wolfgang@siemens.com>"]
+requires-python = ">=3.12,<4.0"
 license = "MIT"
+description = "Vilocify SDK built atop APIv2"
 readme = "README.md"
+authors = [
+    { name =  "Wolfgang Popp", email = "popp.wolfgang@siemens.com" }
+]
+dependencies = [
+    "requests (>=2.31.0,<3.0.0)",
+    "cyclonedx-python-lib (>=10.0.0,<11.0.0)",
+    "click (>=8.1.7,<9.0.0)"
+]
+
+[project.urls]
+homepage = "https://github.com/siemens/vilocify-sdk-python"
+"Bug Tracker" = "https://github.com/siemens/vilocify-sdk-python/issues"
+
+[project.scripts]
+vilocify = 'vilocify.cli:main'
+
+[tool.poetry]
 packages = [
     { include = "vilocify" }
 ]
-
-[tool.poetry.scripts]
-vilocify = 'vilocify.cli:main'
-
-[tool.poetry.dependencies]
-python = "^3.12"
-requests = "^2.31.0"
-cyclonedx-python-lib = "^10.0.0"
-click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
@@ -27,7 +35,7 @@ requests-mock = "^1.12.1"
 editorconfig-checker = "^3.2.1"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
