@@ -15,6 +15,7 @@ from click import BadParameter
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom import Component as BomComponent
 
+import vilocify
 from vilocify.http import JSONAPIRequestError, RequestError
 from vilocify.match import MissingPurlError, match_bom_component
 from vilocify.models import (
@@ -42,6 +43,7 @@ class BadCycloneDXFileError(Exception):
 
 @click.group()
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "ERROR"]), default="INFO")
+@click.version_option(version=vilocify.__version__, message=version_text)
 def cli(log_level: str):
     logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
