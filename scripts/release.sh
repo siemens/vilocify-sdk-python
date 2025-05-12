@@ -17,7 +17,7 @@ Updates and commits pyproject.toml, tags and pushes the commit.
 The CI then publishes a Python package to the package registry of
 this project for tagged commits.
 
-Note that the script must be run on the "main" branch.
+Note that the script must be run on a clean "main" branch.
 
 EOT
 }
@@ -32,11 +32,16 @@ if [ "main" != "$(git branch --show-current)" ]; then
     exit 1
 fi
 
+if [ "$(git status --porcelain)" != "" ]; then
+    echo "ERROR: You have uncommited changes on the main branch"
+    exit 1
+fi
+
 version=$(poetry version --short -- "$1")
 
 git diff pyproject.toml
 echo
-echo "commit, tag and push above changes? [y/N]"
+echo "Commit, tag and push above changes? [y/N]"
 read -r choice
 if [ "$choice" = "y" ]; then
     git commit pyproject.toml -m "Release version $version"
