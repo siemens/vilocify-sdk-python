@@ -90,20 +90,19 @@ def _find_vilocify_component(cache: ComponentCache, bom_component: BomComponent)
 
 def _load_bom(file: io.FileIO) -> Bom:
     if file.name.endswith(".json"):
-        bom =  Bom.from_json(data=json.load(file))  # type: ignore[attr-defined]
+        bom = Bom.from_json(data=json.load(file))  # type: ignore[attr-defined]
     elif file.name.endswith(".xml"):
         bom = Bom.from_xml(data=file)  # type: ignore[attr-defined]
     else:
         raise BadCycloneDXFileError("The CyclondeDX file must end with .json or .xml.")
 
-    if len(bom.components) > 1000:
+    if len(bom.components) > MonitoringList.MAX_COMPONENTS:
         raise BadCycloneDXFileError(
-            "The CycloneDX file contains more than 1000 components, but Vilocify monitoring lists cannot have more "
-            "than 1000 components."
+            f"The CycloneDX file contains more than {MonitoringList.MAX_COMPONENTS} components, but Vilocify monitoring"
+            " lists cannot have more than 1000 components."
         )
 
     return bom
-
 
 
 def _load_ml(name: str, comment: str) -> MonitoringList:
