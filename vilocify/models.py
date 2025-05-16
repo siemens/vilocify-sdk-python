@@ -87,6 +87,8 @@ class Notification(Model):
 
 
 class MonitoringList(Model):
+    MAX_COMPONENTS = 1000
+
     name = Attribute[str]("name")
     comment = Attribute[str | None]("comment")
     active = Attribute[bool]("active")
