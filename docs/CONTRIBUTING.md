@@ -49,3 +49,15 @@ We follow the [Ruff Formatter style](https://docs.astral.sh/ruff/formatter/), wh
 #### Markdown
 We use one line per sentence, and therefore don't enforce a maximum line-length for `.md` files.
 This keeps diffs cleaner and helps to quicker understand the structure of a paragraph when reading the raw `.md` file.
+
+## Development setup
+[Install Poetry](https://python-poetry.org/docs/#installation) **2.0** or newer and Python **3.12** or newer.
+
+```bash
+git clone git@github.com:siemens/vilocify-sdk-python.git
+cd vilocify-sdk-python
+poetry install
+
+# Check that the install was successful by running the linters and tests
+poetry run scripts/lint.sh
+```
