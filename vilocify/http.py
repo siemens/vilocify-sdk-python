@@ -59,12 +59,12 @@ def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | No
     except requests.exceptions.JSONDecodeError:
         response_json = None
 
-    if not response.ok:
-        raise JSONAPIRequestError.from_response(response.status_code, response_json)
-
     logger.debug("status_code=%s response=%s", response.status_code, response_json)
     if "Server-Timing" in response.headers:
         logger.debug("server-timing: %s", response.headers["Server-Timing"])
+
+    if not response.ok:
+        raise JSONAPIRequestError.from_response(response.status_code, response_json)
 
     return response_json
 
