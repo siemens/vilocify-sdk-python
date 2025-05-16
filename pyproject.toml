@@ -6,7 +6,7 @@ license = "MIT"
 description = "Vilocify SDK built atop APIv2"
 readme = "README.md"
 authors = [
-    { name =  "Wolfgang Popp", email = "popp.wolfgang@siemens.com" }
+    { name = "Wolfgang Popp", email = "popp.wolfgang@siemens.com" }
 ]
 dependencies = [
     "requests (>=2.31.0,<3.0.0)",
@@ -16,7 +16,7 @@ dependencies = [
 
 [project.urls]
 homepage = "https://github.com/siemens/vilocify-sdk-python"
-"Bug Tracker" = "https://github.com/siemens/vilocify-sdk-python/issues"
+issues = "https://github.com/siemens/vilocify-sdk-python/issues"
 
 [project.scripts]
 vilocify = 'vilocify.cli:main'
