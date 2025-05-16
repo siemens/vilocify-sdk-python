@@ -160,6 +160,7 @@ def monitoringlist(name: str, comment: str, yes: bool, from_cyclonedx: io.FileIO
                 comment="Auto-created by vilocify-sdk-python",
             )
             component_requests.append(cr)
+            logger.info("Could not find component for %s", bom_component.purl)
         elif (c := cr.component) is not None:
             logger.info("Found component %s for %s through component request %s", c.id, bom_component.purl, cr.id)
             components.append(c)
@@ -168,7 +169,7 @@ def monitoringlist(name: str, comment: str, yes: bool, from_cyclonedx: io.FileIO
 
     if component_requests:
         logger.info(
-            "%d components could not be identified directly or through existing component requests.",
+            "%d components could not be identified directly nor through existing component requests.",
             len(component_requests),
         )
         if yes or click.prompt(f"\nCreate {len(component_requests)} component requests? (y/n)", type=bool):
