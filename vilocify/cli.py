@@ -48,6 +48,13 @@ class BadCycloneDXFileError(Exception):
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "ERROR"]), default="INFO", help="Set the log level.")
 @click.version_option(version=vilocify.__version__, message=version_text)
 def cli(log_level: str):
+    """To see help pages, you can run
+
+    \b
+    vilocify --help
+    vilocify <command> --help
+    vilocify <command> <subcommand> --help
+    """
     logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level, force=True)
 
 
