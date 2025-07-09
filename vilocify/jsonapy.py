@@ -63,6 +63,9 @@ class Many[RelModel: "Model"]:
     def extend(self, *related: RelModel):
         Request(self.obj.__class__).update_many_related(self.obj, self.relationship_name, *related)
 
+    def delete(self, *related: RelModel):
+        Request(self.obj.__class__).delete_many_related(self.obj, self.relationship_name, *related)
+
     def iids(self) -> Iterator[str]:
         yield from (m.id for m in self)
 
@@ -431,6 +434,14 @@ class Request[TModel: "Model"]:
             api_config.base_url, self.model_class.jsonapi_type_name(), obj.id, "relationships", relationship_name
         )
         http.post(url, json=Serializer.serialize_many_related(*related))
+
+    def delete_many_related(self, obj: TModel, relationship_name: str, *related: "Model"):
+        if obj.id is None:
+            raise UnmappedModelError("Model is unmapped and has no ID")
+        url = urljoin(
+            api_config.base_url, self.model_class.jsonapi_type_name(), obj.id, "relationships", relationship_name
+        )
+        http.delete(url, json=Serializer.serialize_many_related(*related))
 
     def delete(self, obj: TModel, meta: Meta = None):
         if obj.id is None:
