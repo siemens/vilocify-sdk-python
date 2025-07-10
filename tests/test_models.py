@@ -34,7 +34,11 @@ def test_monitoring_list_component_deletion(requests_mock: rm.Mocker) -> None:
     ml_id = "c95b8d2a-d113-41e8-8b8a-909aabbe5ff5"
     requests_mock.delete(
         f"https://portal.vilocify.com/api/v2/monitoringLists/{ml_id}/relationships/components",
+        additional_matcher=lambda req: req.json()["data"][0]["id"] == "1337",
         status_code=204,
     )
+
     ml = MonitoringList(id=ml_id, name="test_monitoring_list_component_deletion")
     ml.components.delete(Component(id="1337"))
+
+    assert requests_mock.call_count == 1
