@@ -525,6 +525,10 @@ class Model[TModel: "Model"](metaclass=ModelMeta):
             and all(getattr(self, name) == getattr(other, name) for name in self._model_attribute_names)
         )
 
+    # Models are mutable. From object.__hash__ docs: "If a class defines mutable objects and implements an __eq__()
+    # method, it should not implement __hash__()".
+    __hash__ = None  # type: ignore[assignment]
+
     def __repr__(self) -> str:
         cutoff = 3
 
