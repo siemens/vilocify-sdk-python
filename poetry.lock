@@ -20,14 +20,14 @@ testing = ["pytest (>=6,!=7.0.0)", "pytest-xdist (>=2)"]
 
 [[package]]
 name = "certifi"
-version = "2025.7.14"
+version = "2025.8.3"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
 files = [
-    {file = "certifi-2025.7.14-py3-none-any.whl", hash = "sha256:6b31f564a415d79ee77df69d757bb49a5bb53bd9f756cbbe24394ffd6fc1f4b2"},
-    {file = "certifi-2025.7.14.tar.gz", hash = "sha256:8ea99dbdfaaf2ba2f9bac77b9249ef62ec5218e7c2b2e903378ed5fccf765995"},
+    {file = "certifi-2025.8.3-py3-none-any.whl", hash = "sha256:f6c12493cfb1b06ba2ff328595af9350c65d6644968e5d3a2ffd78699af217a5"},
+    {file = "certifi-2025.8.3.tar.gz", hash = "sha256:e564105f78ded564e3ae7c923924435e1daa7463faeab5bb932bc53ffae63407"},
 ]
 
 [[package]]
@@ -236,14 +236,14 @@ files = [
 
 [[package]]
 name = "license-expression"
-version = "30.4.3"
+version = "30.4.4"
 description = "license-expression is a comprehensive utility library to parse, compare, simplify and normalize license expressions (such as SPDX license expressions) using boolean logic."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "license_expression-30.4.3-py3-none-any.whl", hash = "sha256:fd3db53418133e0eef917606623bc125fbad3d1225ba8d23950999ee87c99280"},
-    {file = "license_expression-30.4.3.tar.gz", hash = "sha256:49f439fea91c4d1a642f9f2902b58db1d42396c5e331045f41ce50df9b40b1f2"},
+    {file = "license_expression-30.4.4-py3-none-any.whl", hash = "sha256:421788fdcadb41f049d2dc934ce666626265aeccefddd25e162a26f23bcbf8a4"},
+    {file = "license_expression-30.4.4.tar.gz", hash = "sha256:73448f0aacd8d0808895bdc4b2c8e01a8d67646e4188f887375398c761f340fd"},
 ]
 
 [package.dependencies]
@@ -326,14 +326,14 @@ files = [
 
 [[package]]
 name = "packageurl-python"
-version = "0.17.1"
+version = "0.17.4"
 description = "A purl aka. Package URL parser and builder"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "packageurl_python-0.17.1-py3-none-any.whl", hash = "sha256:59b0862ae0b216994f847e05b4c6e870e0d16e1ddd706feefb19d79810f22cbd"},
-    {file = "packageurl_python-0.17.1.tar.gz", hash = "sha256:5db592a990b60bc02446033c50fb1803a26c5124cd72c5a2cd1b8ea1ae741969"},
+    {file = "packageurl_python-0.17.4-py3-none-any.whl", hash = "sha256:020df8f3ced4fc4a7973e6b5338e00b1b32c948a6fc6bf2c9bf89bda401cadf2"},
+    {file = "packageurl_python-0.17.4.tar.gz", hash = "sha256:d31e23495dd33efe8e1f9ad98d97af69a21e49e751684864d77a35814254a861"},
 ]
 
 [package.extras]
