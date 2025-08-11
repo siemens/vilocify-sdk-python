@@ -22,7 +22,7 @@ Get `vilocify-sdk` from [PyPI](https://pypi.org/project/vilocify-sdk/).
 If you use [Poetry](https://python-poetry.org/docs/) get it with `poetry add vilocify-sdk`.
 
 ### Authentication
-You can generate an API Token at https://ui.portal.vilocify.com/api-tokens.
+You can generate an API Token at https://portal.vilocify.com/api-tokens.
 
 By default, authentication for the SDK is configured through the `VILOCIFY_API_TOKEN` environment variable.
 Alternatively, the token can be set programmatically:
