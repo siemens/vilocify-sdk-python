@@ -8,10 +8,16 @@ versions that can be used to identify components in Vilocify's component databas
 #  SPDX-FileCopyrightText: 2025 Siemens AG
 #  SPDX-License-Identifier: MIT
 
+from typing import NamedTuple
 from cyclonedx.model.bom import Component as BomComponent
 from packageurl import PackageURL
 
-Matcher = tuple[str | None, str | None]
+
+class Matcher(NamedTuple):
+    name: str | None = None
+    version: str | None = None
+    url: str | None = None
+
 
 PURL_TYPES = {
     "cargo": "Rust Crate",
@@ -112,14 +118,14 @@ class MissingPurlError(Exception):
 def _match_purl_distro(purl: PackageURL) -> Matcher:
     distro_type = PURL_DISTROS.get(purl.type.lower())
     if distro_type is None:
-        return None, None
+        return Matcher()
 
     if purl.namespace is None:
-        return None, None
+        return Matcher()
 
     distro_namespace = distro_type.get(purl.namespace.lower())
     if distro_namespace is None:
-        return None, None
+        return Matcher()
 
     qualifier = None
     if isinstance(purl.qualifiers, dict):
@@ -129,19 +135,22 @@ def _match_purl_distro(purl: PackageURL) -> Matcher:
 
     for matcher, component_prefix in distro_namespace.items():
         if matcher is not None and qualifier is not None and qualifier.startswith(matcher):
-            return f"{component_prefix}: {purl.name}", "All Versions"
+            return Matcher(f"{component_prefix}: {purl.name}", "All Versions")
 
-    return f"{distro_namespace[None]}: {purl.name}", "All Versions"
+    return Matcher(f"{distro_namespace[None]}: {purl.name}", "All Versions")
 
 
 def _match_purl_type(purl: PackageURL) -> Matcher:
     version = purl.version
     if version is not None:
         version = version.lstrip("v")
-    return f"{PURL_TYPES[purl.type]}: {purl.namespace + '/' if purl.namespace else ''}{purl.name}", version
+    return Matcher(f"{PURL_TYPES[purl.type]}: {purl.namespace + '/' if purl.namespace else ''}{purl.name}", version)
 
 
 def match_purl(purl: PackageURL) -> Matcher:
+    if purl.type == "github":
+        return Matcher(None, purl.version, f"https://github.com/{purl.namespace}/{purl.name}")
+
     if purl.type in PURL_TYPES:
         return _match_purl_type(purl)
 
