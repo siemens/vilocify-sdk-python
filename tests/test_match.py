@@ -41,7 +41,7 @@ package_purls = [
 
 github_purls = [
     ("pkg:github/package-url/purl-spec@244fd47e07d", "244fd47e07d", "https://github.com/package-url/purl-spec"),
-    ("pkg:github/curl/curl@8.4.0", "8.4.0", "https://github.com/curl/curl")
+    ("pkg:github/curl/curl@8.4.0", "8.4.0", "https://github.com/curl/curl"),
 ]
 
 unknown_purls = [
@@ -66,12 +66,14 @@ def test_match_package_purls(purl: str, expected_name: str, expected_version: st
     assert version == expected_version
     assert url is None
 
+
 @pytest.mark.parametrize(("purl", "expected_version", "expected_url"), github_purls)
-def test_match_package_purls(purl: str, expected_version: str, expected_url: str):
+def test_match_github_purls(purl: str, expected_version: str, expected_url: str):
     name, version, url = match_purl(PackageURL.from_string(purl))
     assert name is None
     assert version == expected_version
     assert url == expected_url
+
 
 @pytest.mark.parametrize("purl", unknown_purls)
 def test_match_unknown_purl(purl: str):

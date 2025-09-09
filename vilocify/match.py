@@ -9,6 +9,7 @@ versions that can be used to identify components in Vilocify's component databas
 #  SPDX-License-Identifier: MIT
 
 from typing import NamedTuple
+
 from cyclonedx.model.bom import Component as BomComponent
 from packageurl import PackageURL
 
