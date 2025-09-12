@@ -88,13 +88,24 @@ def notifications(monitoring_list: str, since: datetime):
 
 
 def _find_vilocify_component(cache: ComponentCache, bom_component: BomComponent) -> Component | None:
-    vilocify_name, vilocify_version = match_bom_component(bom_component)
-    if vilocify_name is not None and vilocify_version is not None:
+    vilocify_name, vilocify_version, url = match_bom_component(bom_component)
+    if vilocify_version is None:
+        return None
+
+    if vilocify_name is not None:
         if (k := (vilocify_name, vilocify_version)) in cache:
             return cache[k]
 
         return (
             Component.where("name", "eq", vilocify_name)
+            .where("version", "eq", vilocify_version)
+            .where("active", "eq", "true")
+            .first()
+        )
+
+    if url is not None:
+        return (
+            Component.where("url", "like", url)
             .where("version", "eq", vilocify_version)
             .where("active", "eq", "true")
             .first()
@@ -200,7 +211,7 @@ def monitoringlist_import(name: str, comment: str, yes: bool, from_cyclonedx: io
     for bom_component in unidentified_components:
         cr = ComponentRequest.where("componentUrl", "eq", str(bom_component.purl)).first()
         if cr is None:
-            component_name, version = match_bom_component(bom_component)
+            component_name, version, _ = match_bom_component(bom_component)
             cr = ComponentRequest(
                 name=component_name or bom_component.name,
                 version=version or bom_component.version,

@@ -39,30 +39,45 @@ package_purls = [
     ("pkg:composer/composer/pcre@3.3.1", "PHP Package: composer/pcre", "3.3.1"),
 ]
 
+github_purls = [
+    ("pkg:github/package-url/purl-spec@244fd47e07d", "244fd47e07d", "https://github.com/package-url/purl-spec"),
+    ("pkg:github/curl/curl@8.4.0", "8.4.0", "https://github.com/curl/curl"),
+]
+
 unknown_purls = [
     "pkg:conan/openssl@3.0.3",
     "pkg:deb/bash@4.12",
     "pkg:android/com.android.dialer@35",
-    "pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c",
 ]
 
 
 @pytest.mark.parametrize(("purl", "expected"), distro_purls)
 def test_match_distro_purl(purl: str, expected: str):
-    name, version = match_purl(PackageURL.from_string(purl))
+    name, version, url = match_purl(PackageURL.from_string(purl))
     assert name == expected
     assert version == "All Versions"
+    assert url is None
 
 
 @pytest.mark.parametrize(("purl", "expected_name", "expected_version"), package_purls)
 def test_match_package_purls(purl: str, expected_name: str, expected_version: str):
-    name, version = match_purl(PackageURL.from_string(purl))
+    name, version, url = match_purl(PackageURL.from_string(purl))
     assert name == expected_name
     assert version == expected_version
+    assert url is None
+
+
+@pytest.mark.parametrize(("purl", "expected_version", "expected_url"), github_purls)
+def test_match_github_purls(purl: str, expected_version: str, expected_url: str):
+    name, version, url = match_purl(PackageURL.from_string(purl))
+    assert name is None
+    assert version == expected_version
+    assert url == expected_url
 
 
 @pytest.mark.parametrize("purl", unknown_purls)
 def test_match_unknown_purl(purl: str):
-    name, version = match_purl(PackageURL.from_string(purl))
+    name, version, url = match_purl(PackageURL.from_string(purl))
     assert name is None
     assert version is None
+    assert url is None
