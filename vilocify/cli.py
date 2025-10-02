@@ -126,6 +126,7 @@ def _load_bom(file: io.FileIO) -> Bom:
         raise BadCycloneDXFileError(
             f"The CycloneDX file contains more than {MonitoringList.MAX_COMPONENTS} components, but Vilocify monitoring"
             f" lists cannot have more than {MonitoringList.MAX_COMPONENTS} components."
+            "Consider creating separate lists for dev, prod, or build dependencies."
         )
 
     return bom
