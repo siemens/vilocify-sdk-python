@@ -1,7 +1,7 @@
 # Vilocify SDK and CLI tool
 
 The Python SDK for [Vilocify](https://docs.vilocify.com), built using Vilocify's APIv2 JSON:API.
-This project also includes an example CLI tool to manage Vilocify Monitoring Lists.
+This project also includes a CLI tool to manage Vilocify Monitoring Lists e.g. to update or create lists from CycloneDX SBOM files.
 
 ## Prerequisites
 The Vilocify SDK needs Python 3.12 or newer.
@@ -9,7 +9,15 @@ The Vilocify SDK needs Python 3.12 or newer.
 ## CLI usage
 1. Get [pipx](https://pipx.pypa.io/stable/)
 2. Install the CLI with `pipx install vilocify-sdk`
-3. Run `vilocify --help` for documentation of the bundled example CLI tool
+3. Run `vilocify --help` for documentation of the CLI tool
+
+### Example
+Following example imports a monitoring list from a CycloneDX SBOM.
+Note that the monitoring list is identified by its name.
+If a monitoring list with the same name already exists, it gets overwritten with the contents from the SBOM file.
+```bash
+vilocify monitoringlist import --name "My Project v1.2.3" --from-cyclonedx my_project_v1.2.3.sbom.json
+```
 
 ## SDK usage
 The SDK is built on Vilocify's API.
