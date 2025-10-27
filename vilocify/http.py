@@ -2,6 +2,7 @@
 #  SPDX-License-Identifier: MIT
 
 import logging
+import time
 from dataclasses import dataclass
 
 import requests
@@ -15,6 +16,11 @@ class RequestError(Exception):
     def __init__(self, error_code: int, message: str):
         self.error_code = error_code
         self.message = message
+
+
+class RateLimitError(Exception):
+    def __init__(self, retry_after: int):
+        self.retry_after = retry_after
 
 
 @dataclass
@@ -46,7 +52,18 @@ class JSONAPIRequestError(RequestError):
         return JSONAPIRequestError(code, message, errors)
 
 
-def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
+def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None):
+    for i in range(1, 4):
+        try:
+            return _rate_limited_request(verb, url, json, params)
+        except RateLimitError as e:
+            logger.warning("Throttling due to rate limit. Attempt %d", i)
+            time.sleep(e.retry_after)
+
+    raise RequestError(429, "Ratelimit exceeded and retry failed")
+
+
+def _rate_limited_request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
     logger.debug("%s: url=%s, params=%s, json=%s", verb.upper(), url, params, json)
     response = api_config.client.request(
         verb, url, timeout=api_config.request_timeout_seconds, json=json, params=params
@@ -62,6 +79,10 @@ def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | No
     logger.debug("status_code=%s response=%s", response.status_code, response_json)
     if "Server-Timing" in response.headers:
         logger.debug("server-timing: %s", response.headers["Server-Timing"])
+
+    if response.status_code == 429:
+        # TODO get retry_after from RateLimit-Reset or Retry-After headers
+        raise RateLimitError(retry_after=10)
 
     if not response.ok:
         raise JSONAPIRequestError.from_response(response.status_code, response_json)
