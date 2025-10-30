@@ -1,6 +1,5 @@
 #  SPDX-FileCopyrightText: 2025 Siemens AG
 #  SPDX-License-Identifier: MIT
-
 import logging
 import time
 from dataclasses import dataclass
@@ -19,8 +18,7 @@ class RequestError(Exception):
 
 
 class RateLimitError(Exception):
-    def __init__(self, retry_after: int):
-        self.retry_after = retry_after
+    """Raised for rate limiting."""
 
 
 @dataclass
@@ -53,12 +51,12 @@ class JSONAPIRequestError(RequestError):
 
 
 def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None):
-    for i in range(1, 4):
+    for i in range(10):
         try:
             return _rate_limited_request(verb, url, json, params)
-        except RateLimitError as e:
-            logger.warning("Throttling due to rate limit. Attempt %d", i)
-            time.sleep(e.retry_after)
+        except RateLimitError:
+            logger.warning("Pausing due to rate limit")
+            time.sleep(1)
 
     raise RequestError(429, "Ratelimit exceeded and retry failed")
 
@@ -81,8 +79,7 @@ def _rate_limited_request(verb: str, url: str, json: JSON = None, params: dict[s
         logger.debug("server-timing: %s", response.headers["Server-Timing"])
 
     if response.status_code == 429:
-        # TODO get retry_after from RateLimit-Reset or Retry-After headers
-        raise RateLimitError(retry_after=10)
+        raise RateLimitError()
 
     if not response.ok:
         raise JSONAPIRequestError.from_response(response.status_code, response_json)
