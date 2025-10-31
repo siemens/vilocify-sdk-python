@@ -1,7 +1,7 @@
 #  SPDX-FileCopyrightText: 2025 Siemens AG
 #  SPDX-License-Identifier: MIT
-
 import logging
+import time
 from dataclasses import dataclass
 
 import requests
@@ -15,6 +15,10 @@ class RequestError(Exception):
     def __init__(self, error_code: int, message: str):
         self.error_code = error_code
         self.message = message
+
+
+class RateLimitError(Exception):
+    """Raised for rate limiting."""
 
 
 @dataclass
@@ -47,6 +51,17 @@ class JSONAPIRequestError(RequestError):
 
 
 def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
+    for i in range(10):
+        try:
+            return _rate_limited_request(verb, url, json, params)
+        except RateLimitError:
+            logger.debug("Pausing due to rate limit")
+            time.sleep(1)
+
+    raise RequestError(requests.codes.too_many_requests, "Ratelimit exceeded and retry failed")
+
+
+def _rate_limited_request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
     logger.debug("%s: url=%s, params=%s, json=%s", verb.upper(), url, params, json)
     response = api_config.client.request(
         verb, url, timeout=api_config.request_timeout_seconds, json=json, params=params
@@ -62,6 +77,9 @@ def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | No
     logger.debug("status_code=%s response=%s", response.status_code, response_json)
     if "Server-Timing" in response.headers:
         logger.debug("server-timing: %s", response.headers["Server-Timing"])
+
+    if response.status_code == requests.codes.too_many_requests:
+        raise RateLimitError()
 
     if not response.ok:
         raise JSONAPIRequestError.from_response(response.status_code, response_json)
