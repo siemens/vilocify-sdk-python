@@ -50,15 +50,15 @@ class JSONAPIRequestError(RequestError):
         return JSONAPIRequestError(code, message, errors)
 
 
-def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None):
+def _request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
     for i in range(10):
         try:
             return _rate_limited_request(verb, url, json, params)
         except RateLimitError:
-            logger.warning("Pausing due to rate limit")
+            logger.debug("Pausing due to rate limit")
             time.sleep(1)
 
-    raise RequestError(429, "Ratelimit exceeded and retry failed")
+    raise RequestError(requests.codes.too_many_requests, "Ratelimit exceeded and retry failed")
 
 
 def _rate_limited_request(verb: str, url: str, json: JSON = None, params: dict[str, str] | None = None) -> JSON:
@@ -78,7 +78,7 @@ def _rate_limited_request(verb: str, url: str, json: JSON = None, params: dict[s
     if "Server-Timing" in response.headers:
         logger.debug("server-timing: %s", response.headers["Server-Timing"])
 
-    if response.status_code == 429:
+    if response.status_code == requests.codes.too_many_requests:
         raise RateLimitError()
 
     if not response.ok:
