@@ -213,10 +213,10 @@ def monitoringlist_import(name: str, comment: str, yes: bool, from_cyclonedx: io
         cr = ComponentRequest.where("componentUrl", "eq", str(bom_component.purl)).first()
         if cr is None:
             component_name, version, _ = match_bom_component(bom_component)
-            version = version or bom_component.version or bom_component.purl.qualifiers.get("vcs_url") or "All Versions"
+            vcs_qualifier = bom_component.purl.qualifiers.get("vcs_url") if bom_component.purl is not None else None
             cr = ComponentRequest(
                 name=component_name or bom_component.name,
-                version=version,
+                version=version or bom_component.version or vcs_qualifier or "All Versions",
                 component_url=str(bom_component.purl),
                 comment="Auto-created by vilocify-sdk-python",
             )
