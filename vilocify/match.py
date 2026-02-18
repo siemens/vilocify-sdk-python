@@ -24,6 +24,8 @@ PURL_TYPES = {
     "cargo": "Rust Crate",
     "composer": "PHP Package",
     "cpan": "Perl Module",
+    "conda": "Anaconda Package",
+    "cran": "R Project package",
     "gem": "RubyGem",
     "golang": "Go Package",
     "hackage": "Haskell Package",
@@ -32,6 +34,7 @@ PURL_TYPES = {
     "pub": "Dart Package",
     "pypi": "Python Package",
     "swift": "Swift Package",
+    "vscode-extension": "Visual Studio Code Extension",
 }
 
 PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
@@ -43,6 +46,8 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
             "alpine-3.19": "Alpine 3.19 Package",
             "alpine-3.20": "Alpine 3.20 Package",
             "alpine-3.21": "Alpine 3.21 Package",
+            "alpine-3.22": "Alpine 3.22 Package",
+            "alpine-3.23": "Alpine 3.23 Package",
         },
         "openwrt": {
             None: "OpenWrt Package",
@@ -55,12 +60,15 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
             "bullseye": "Debian 11 Package",
             "debian-12": "Debian 12 Package",
             "bookworm": "Debian 12 Package",
+            "debian-13": "Debian 13 Package",
+            "trixie": "Debian 13 Package",
         },
         "ubuntu": {
             None: "Ubuntu Package",
             "ubuntu-20.04": "Ubuntu 20.04 Package",
             "ubuntu-22.04": "Ubuntu 22.04 Package",
             "ubuntu-24.04": "Ubuntu 24.04 Package",
+            "ubuntu-26.04": "Ubuntu 26.04 Package",
         },
     },
     "rpm": {
@@ -81,6 +89,7 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
             "fedora-40": "Fedora 40 Package",
             "fedora-41": "Fedora 41 Package",
             "fedora-42": "Fedora 42 Package",
+            "fedora-43": "Fedora 43 Package",
         },
         "opensuse": {
             None: "openSUSE Package",
@@ -90,17 +99,20 @@ PURL_DISTROS: dict[str, dict[str, dict[str | None, str]]] = {
             "ol-7": "Oracle Linux OS 7 Package",
             "ol-8": "Oracle Linux OS 8 Package",
             "ol-9": "Oracle Linux OS 9 Package",
+            "ol-10": "Oracle Linux OS 10 Package",
         },
         "redhat": {
             None: "RHEL Package",
             "rhel-7": "RHEL 7 Package",
             "rhel-8": "RHEL 8 Package",
             "rhel-9": "RHEL 9 Package",
+            "rhel-10": "RHEL 10 Package",
         },
         "rocky": {
             None: "Rocky Linux Package",
             "rocky-8": "Rocky Linux 8 Package",
             "rocky-9": "Rocky Linux 9 Package",
+            "rocky-10": "Rocky Linux 10 Package",
         },
         "sles": {
             None: "SUSE Linux Enterprise Server Package",
