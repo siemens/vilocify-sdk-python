@@ -25,7 +25,7 @@ PURL_TYPES = {
     "composer": "PHP Package",
     "cpan": "Perl Module",
     "conda": "Anaconda Package",
-    "cran": "R Project package",
+    "cran": "R Project Package",
     "gem": "RubyGem",
     "golang": "Go Package",
     "hackage": "Haskell Package",
