@@ -37,7 +37,11 @@ package_purls = [
     ),
     ("pkg:gem/actionpack@7.2.2.1", "RubyGem: actionpack", "7.2.2.1"),
     ("pkg:composer/composer/pcre@3.3.1", "PHP Package: composer/pcre", "3.3.1"),
-    ("pkg:vscode-extension/ms-python/python@2023.25.10292213", "Visual Studio Code Extension: ms-python/python", "2023.25.10292213"),
+    (
+        "pkg:vscode-extension/ms-python/python@2023.25.10292213",
+        "Visual Studio Code Extension: ms-python/python",
+        "2023.25.10292213",
+    ),
     ("pkg:cran/caret@6.0-88", "R Project Package: caret", "6.0-88"),
     ("pkg:conda/libffi@3.4.4", "Anaconda Package: libffi", "3.4.4"),
 ]
