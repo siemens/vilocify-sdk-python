@@ -1,6 +1,6 @@
 """Cli to interact with Vilocify API."""
 
-#  SPDX-FileCopyrightText: 2025 Siemens AG
+#  SPDX-FileCopyrightText: 2026 Siemens AG
 #  SPDX-License-Identifier: MIT
 
 import csv
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 version_text = """Vilocify Python SDK, version %(version)s
 
-Copyright (C) 2025 Siemens AG
+Copyright (C) 2026 Siemens AG
 MIT License
 """
 
