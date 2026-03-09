@@ -5,7 +5,7 @@ follows certain (undocumented) naming conventions. This module provides function
 versions that can be used to identify components in Vilocify's component database.
 """
 
-#  SPDX-FileCopyrightText: 2025 Siemens AG
+#  SPDX-FileCopyrightText: 2026 Siemens AG
 #  SPDX-License-Identifier: MIT
 
 from typing import NamedTuple

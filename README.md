@@ -163,4 +163,4 @@ See [Contributing.md](docs/CONTRIBUTING.md).
 ## License
 [MIT License](LICENSE)
 
-Copyright (c) 2025 Siemens AG
+Copyright (c) 2026 Siemens AG

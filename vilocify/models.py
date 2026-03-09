@@ -1,6 +1,6 @@
 """Model definitions for the Vilocify API"""
 
-#  SPDX-FileCopyrightText: 2025 Siemens AG
+#  SPDX-FileCopyrightText: 2026 Siemens AG
 #  SPDX-License-Identifier: MIT
 
 from vilocify.jsonapy import Action, Attribute, Model, RelationshipToMany, RelationshipToOne
