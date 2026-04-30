@@ -7,7 +7,7 @@ import abc
 from collections.abc import Iterable, Iterator
 from enum import Enum
 from itertools import islice
-from typing import Any, ClassVar, NamedTuple, Self
+from typing import Any, ClassVar, NamedTuple, Self, Callable
 from urllib.parse import urlparse
 
 from vilocify import JSON, api_config, http
@@ -65,6 +65,9 @@ class Many[RelModel: "Model"]:
 
     def delete(self, *related: RelModel):
         Request(self.obj.__class__).delete_many_related(self.obj, self.relationship_name, *related)
+
+    def replace(self, *related: RelModel):
+        Request(self.obj.__class__).replace_many_related(self.obj, self.relationship_name, *related)
 
     def iids(self) -> Iterator[str]:
         yield from (m.id for m in self)
@@ -427,21 +430,22 @@ class Request[TModel: "Model"]:
             obj._jsonapi_attributes = res._jsonapi_attributes
             obj._id = res.id
 
-    def update_many_related(self, obj: TModel, relationship_name: str, *related: "Model"):
+    def _request_many_related(self, method: Callable[[str, JSON], JSON], obj: TModel, relationship_name: str, *related: "Model"):
         if obj.id is None:
             raise UnmappedModelError("Model is unmapped and has no ID")
         url = urljoin(
             api_config.base_url, self.model_class.jsonapi_type_name(), obj.id, "relationships", relationship_name
         )
-        http.post(url, json=Serializer.serialize_many_related(*related))
+        method(url, Serializer.serialize_many_related(*related))
+
+    def update_many_related(self, obj: TModel, relationship_name: str, *related: "Model"):
+        self._request_many_related(http.post, obj, relationship_name, *related)
+
+    def replace_many_related(self, obj: TModel, relationship_name: str, *related: "Model"):
+        self._request_many_related(http.patch, obj, relationship_name, *related)
 
     def delete_many_related(self, obj: TModel, relationship_name: str, *related: "Model"):
-        if obj.id is None:
-            raise UnmappedModelError("Model is unmapped and has no ID")
-        url = urljoin(
-            api_config.base_url, self.model_class.jsonapi_type_name(), obj.id, "relationships", relationship_name
-        )
-        http.delete(url, json=Serializer.serialize_many_related(*related))
+        self._request_many_related(http.delete, obj, relationship_name, *related)
 
     def delete(self, obj: TModel, meta: Meta = None):
         if obj.id is None:
