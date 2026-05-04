@@ -4,10 +4,10 @@
 #  SPDX-License-Identifier: MIT
 
 import abc
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from enum import Enum
 from itertools import islice
-from typing import Any, ClassVar, NamedTuple, Self, Callable
+from typing import Any, ClassVar, NamedTuple, Self
 from urllib.parse import urlparse
 
 from vilocify import JSON, api_config, http
@@ -430,7 +430,9 @@ class Request[TModel: "Model"]:
             obj._jsonapi_attributes = res._jsonapi_attributes
             obj._id = res.id
 
-    def _request_many_related(self, method: Callable[[str, JSON], JSON], obj: TModel, relationship_name: str, *related: "Model"):
+    def _request_many_related(
+        self, method: Callable[[str, JSON], JSON], obj: TModel, relationship_name: str, *related: "Model"
+    ):
         if obj.id is None:
             raise UnmappedModelError("Model is unmapped and has no ID")
         url = urljoin(

@@ -237,7 +237,7 @@ def monitoringlist_import(name: str, comment: str, yes: bool, from_cyclonedx: io
             for cr in component_requests:
                 cr.create()
 
-            ml.component_requests.replace(component_requests)
+            ml.component_requests.replace(*component_requests)
 
     ml.components = components
     ml.update()
