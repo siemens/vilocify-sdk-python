@@ -4,6 +4,7 @@
 #  SPDX-License-Identifier: MIT
 
 import abc
+import warnings
 from collections.abc import Iterable, Iterator
 from enum import Enum
 from itertools import islice
@@ -202,8 +203,15 @@ class Serializer[TModel: "Model"]:
 
     @staticmethod
     def serialize_meta(meta: Meta) -> JSONDict:
-        if meta is None:
-            return {"meta": {}}
+        if meta is not None and "sendEmail" in meta:
+            warnings.warn(
+                "the sendEmail meta flag is deprecated and will be removed in a future release of the Vilocify SDK",
+                DeprecationWarning,
+            )
+            del meta["sendEmail"]
+
+        if not meta:
+            return {}
         return {"meta": meta}
 
     @staticmethod
@@ -237,8 +245,7 @@ class Serializer[TModel: "Model"]:
             data["relationships"] = relationships
 
         return_dict: JSONDict = {"data": data}
-        if meta:
-            return_dict["meta"] = meta
+        return_dict |= Serializer.serialize_meta(meta)
 
         return return_dict
 
