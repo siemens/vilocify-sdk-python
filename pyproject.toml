@@ -29,7 +29,7 @@ packages = [
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"
 ruff = "^0.15.0"
-mypy = "^1.11.2"
+mypy = "^2.0.0"
 types-requests = "^2.32.0.20240914"
 requests-mock = "^1.12.1"
 editorconfig-checker = "^3.2.1"
