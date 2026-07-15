@@ -96,6 +96,7 @@ class MonitoringList(Model):
     updated_at = Attribute[str]("updatedAt", serialize_on=())
 
     components = RelationshipToMany(Component)
+    component_requests = RelationshipToMany(ComponentRequest)
     subscriptions: RelationshipToMany["Subscription"] = RelationshipToMany("Subscription")
     parents: RelationshipToMany["MonitoringList"] = RelationshipToMany("MonitoringList", "parents")
     children: RelationshipToMany["MonitoringList"] = RelationshipToMany("MonitoringList", "children")
