@@ -18,6 +18,7 @@ class Component(Model):
     active = Attribute[bool]("active")
     deactivated_at = Attribute[str | None]("deactivatedAt")
     deactivation_reason = Attribute[str | None]("deactivationReason")
+    tlp = Attribute[str]("tlp")
 
     monitoring_lists: RelationshipToMany["MonitoringList"] = RelationshipToMany("MonitoringList")
     notifications: RelationshipToMany["Notification"] = RelationshipToMany("Notification")
@@ -81,6 +82,7 @@ class Notification(Model):
     third_party_published_on = Attribute[str]("thirdPartyPublishedOn")
     created_at = Attribute[str]("createdAt")
     updated_at = Attribute[str]("updatedAt")
+    tlp = Attribute[str]("tlp")
 
     vulnerabilities = RelationshipToMany(Vulnerability)
     components = RelationshipToMany(Component)
@@ -94,6 +96,8 @@ class MonitoringList(Model):
     active = Attribute[bool]("active")
     created_at = Attribute[str]("createdAt", serialize_on=())
     updated_at = Attribute[str]("updatedAt", serialize_on=())
+    group = Attribute[str | None]("group")
+    internal = Attribute[bool]("internal")
 
     components = RelationshipToMany(Component)
     component_requests = RelationshipToMany(ComponentRequest)
