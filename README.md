@@ -13,11 +13,26 @@ The Vilocify SDK needs Python 3.12 or newer.
 
 ### Example
 Following example imports a monitoring list from a CycloneDX SBOM.
-Note that the monitoring list is identified by its name.
-If a monitoring list with the same name already exists, it gets overwritten with the contents from the SBOM file.
+Note that the monitoring list is identified by its display name and comment (which defaults to an empty string).
+If a monitoring list with the same name and comment already exists, its components get replaced with the contents from the SBOM file.
 ```bash
 vilocify monitoringlist import --name "My Project v1.2.3" --from-cyclonedx my_project_v1.2.3.sbom.json
 ```
+
+To update an existing monitoring list by UUID, use `--id` instead of `--name`. Its name and comment are preserved:
+```bash
+poetry run vilocify monitoringlist import --id "<monitoring-list UUID>" --from-cyclonedx my_project_v1.2.3.sbom.json --yes
+```
+
+Use `--group` to specify the **organization group's display name**, not its UUID. The API token determines the organization.
+This sets the group on both new and existing monitoring lists. If omitted, existing lists keep their group and new lists use
+the organization's default group; specify it if your instance returns an "Organization group can't be blank" error:
+```bash
+poetry run vilocify monitoringlist import --name "My Project v1.2.3" --group "Engineering" --from-cyclonedx my_project_v1.2.3.sbom.json --yes
+```
+
+Supply exactly one of `--id` or `--name`. `--comment` is only supported with `--name`.
+`--yes` skips the confirmation prompt for creating requests for unknown components.
 
 ## SDK usage
 The SDK is built on Vilocify's API.
