@@ -132,12 +132,23 @@ def _load_bom(file: io.FileIO) -> Bom:
     return bom
 
 
-def _load_ml(name: str, comment: str) -> MonitoringList:
-    ml = MonitoringList.where("name", "eq", name).where("comment", "eq", comment).first()
-    if ml is None:
-        logger.info("No monitoring list with given name and comment found. Creating new list.")
-        ml = MonitoringList(name=name, comment=comment)
-        ml.create()
+def _load_ml(name: str | None, comment: str, monitoring_list_id: str | None, group: str | None) -> MonitoringList:
+    ml: MonitoringList | None
+    if monitoring_list_id is not None:
+        ml = MonitoringList.get(monitoring_list_id)
+    elif name is not None:
+        ml = MonitoringList.where("name", "eq", name).where("comment", "eq", comment).first()
+        if ml is None:
+            logger.info("No monitoring list with given name and comment found. Creating new list.")
+            ml = MonitoringList(name=name, comment=comment)
+            if group is not None:
+                ml.group = group
+            ml.create()
+    else:
+        raise UsageError("Specify exactly one of --id or --name.")
+
+    if group is not None:
+        ml.group = group
 
     logger.info("Using monitoring list %s", ml.id)
     return ml
@@ -188,24 +199,46 @@ def monitoringlist_show(monitoring_list_id: str, export_format: str):
 
 
 @monitoringlist.command("import")
-@click.option("--name", required=True, help="The monitoring list name.")
-@click.option("--comment", default="", help="The comment set for the monitoring list.")
+@click.option(
+    "--id", "monitoring_list_id", help="The UUID of an existing monitoring list. Mutually exclusive with --name."
+)
+@click.option("--name", help="The monitoring list display name. Required unless --id is given.")
+@click.option(
+    "--comment", help="The comment used with --name to identify the monitoring list. Defaults to an empty string."
+)
+@click.option("--group", help="The organization group name to set on the monitoring list.")
 @click.option("--yes", is_flag=True, help="Skip interactive questions. Assumes 'yes' for all answers.")
 @click.option("--from-cyclonedx", type=click.File("rt"), required=True, help="The CycloneDX file to import.")
-def monitoringlist_import(name: str, comment: str, yes: bool, from_cyclonedx: io.FileIO):
+def monitoringlist_import(  # noqa: PLR0913 - Each parameter corresponds to a CLI option.
+    *,
+    monitoring_list_id: str | None,
+    name: str | None,
+    comment: str | None,
+    group: str | None,
+    yes: bool,
+    from_cyclonedx: io.FileIO,
+):
     """Creates or updates a monitoring list from a CycloneDX JSON or XML file.
 
-    The monitoring list is identified by the given name and comment. Changing the name or comment between runs will
-    create a new monitoring list. The JSON or XML filetype is identified by the filename ending.
+    Use --id to update an existing monitoring list, preserving its name and comment. Otherwise, the monitoring list is
+    identified by the given name and comment. Changing either between runs will create a new monitoring list.
+    --comment can only be used with --name. --group sets the organization group by name; if omitted, existing lists keep
+    their group and new lists use the organization's default group. The JSON or XML filetype is identified by the
+    filename ending.
 
     Some components might not be found on Vilocify. A ComponentRequest is created for components that cannot be
     identified. ComponentRequests might need several days to get processed and integrated into Vilocify. Running the
     same command repeatedly will update the monitoring list once the component requests are processed.
     """
 
+    if (monitoring_list_id is None) == (name is None):
+        raise UsageError("Specify exactly one of --id or --name.")
+    if monitoring_list_id is not None and comment is not None:
+        raise UsageError("--comment can only be used with --name.")
+
     component_requests = []
     bom = _load_bom(from_cyclonedx)
-    ml = _load_ml(name, comment)
+    ml = _load_ml(name, comment or "", monitoring_list_id, group)
     components_cache = {(c.name, c.version): c for c in ml.components}
     components, unidentified_components = _match_bom(components_cache, bom)
 
