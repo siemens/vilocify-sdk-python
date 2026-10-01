@@ -23,6 +23,7 @@ from vilocify.match import MissingPurlError, match_bom_component
 from vilocify.models import (
     Component,
     ComponentRequest,
+    Group,
     MonitoringList,
     Notification,
     Vulnerability,
@@ -132,11 +133,11 @@ def _load_bom(file: io.FileIO) -> Bom:
     return bom
 
 
-def _load_ml(name: str, comment: str) -> MonitoringList:
+def _load_ml(name: str, comment: str, group: str | None) -> MonitoringList:
     ml = MonitoringList.where("name", "eq", name).where("comment", "eq", comment).first()
     if ml is None:
         logger.info("No monitoring list with given name and comment found. Creating new list.")
-        ml = MonitoringList(name=name, comment=comment)
+        ml = MonitoringList(name=name, comment=comment, group=group)
         ml.create()
 
     logger.info("Using monitoring list %s", ml.id)
@@ -190,9 +191,10 @@ def monitoringlist_show(monitoring_list_id: str, export_format: str):
 @monitoringlist.command("import")
 @click.option("--name", required=True, help="The monitoring list name.")
 @click.option("--comment", default="", help="The comment set for the monitoring list.")
+@click.option("--group", help="The group set for the monitoring list. This")
 @click.option("--yes", is_flag=True, help="Skip interactive questions. Assumes 'yes' for all answers.")
 @click.option("--from-cyclonedx", type=click.File("rt"), required=True, help="The CycloneDX file to import.")
-def monitoringlist_import(name: str, comment: str, yes: bool, from_cyclonedx: io.FileIO):
+def monitoringlist_import(name: str, comment: str, group: str | None, yes: bool, from_cyclonedx: io.FileIO):
     """Creates or updates a monitoring list from a CycloneDX JSON or XML file.
 
     The monitoring list is identified by the given name and comment. Changing the name or comment between runs will
@@ -205,7 +207,7 @@ def monitoringlist_import(name: str, comment: str, yes: bool, from_cyclonedx: io
 
     component_requests = []
     bom = _load_bom(from_cyclonedx)
-    ml = _load_ml(name, comment)
+    ml = _load_ml(name, comment, group)
     components_cache = {(c.name, c.version): c for c in ml.components}
     components, unidentified_components = _match_bom(components_cache, bom)
 
@@ -259,6 +261,16 @@ def component_request(state: tuple[str]):
         print("URL:", cr.component_url)
         print("state:", cr.state)
         print()
+
+
+@cli.command()
+def groups():
+    """List groups available on the current tenant.
+
+    This lists the names of groups that are visible to the current membership.
+    """
+    for group in Group.asc("name"):
+        print(group.name)
 
 
 def main():
