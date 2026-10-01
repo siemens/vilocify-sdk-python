@@ -191,7 +191,7 @@ def monitoringlist_show(monitoring_list_id: str, export_format: str):
 @monitoringlist.command("import")
 @click.option("--name", required=True, help="The monitoring list name.")
 @click.option("--comment", default="", help="The comment set for the monitoring list.")
-@click.option("--group", help="The group set for the monitoring list. This")
+@click.option("--group", help="The group of the monitoring list, in case a new list is created.")
 @click.option("--yes", is_flag=True, help="Skip interactive questions. Assumes 'yes' for all answers.")
 @click.option("--from-cyclonedx", type=click.File("rt"), required=True, help="The CycloneDX file to import.")
 def monitoringlist_import(name: str, comment: str, group: str | None, yes: bool, from_cyclonedx: io.FileIO):
