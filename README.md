@@ -19,6 +19,13 @@ If a monitoring list with the same name already exists, it gets overwritten with
 vilocify monitoringlist import --name "My Project v1.2.3" --from-cyclonedx my_project_v1.2.3.sbom.json
 ```
 
+### Example: Tenant with group feature enabled
+If the example above gave you the error `Organization group must exist`, you must specify the `--group` parameter on import.
+Valid values for `--group` can be listed with `vilocify groups`.
+```bash
+vilocify monitoringlist import --name "My Project v1.2.3" --group "ABC" --from-cyclonedx my_project_v1.2.3.sbom.json
+```
+
 ## SDK usage
 The SDK is built on Vilocify's API.
 We recommend you also take a quick look at the raw API docs at https://portal.vilocify.com/documentation.

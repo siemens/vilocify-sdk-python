@@ -114,3 +114,9 @@ class Subscription(Model):
 
     membership = RelationshipToOne(Membership)
     monitoring_list = RelationshipToOne(MonitoringList)
+
+
+class Group(Model):
+    name = Attribute[str]("name")
+    created_at = Attribute[str]("createdAt")
+    updated_at = Attribute[str]("updatedAt")
