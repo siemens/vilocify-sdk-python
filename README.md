@@ -62,6 +62,24 @@ print(m.invitation_state)
 print(m.created_at)
 ```
 
+#### Dates and timestamps
+
+Model timestamp attributes such as `created_at` and `expires_at` return Python `datetime` objects.
+Date-only attributes (`Component.eol_on` and `Notification.third_party_published_on`) return `date` objects.
+Nullable fields continue to return `None`, and timestamp timezone offsets are preserved.
+Use `.isoformat()` if you need a string instead.
+
+You can assign Python dates and timestamps when creating or updating a model:
+```python
+from datetime import UTC, datetime
+from vilocify.models import Membership
+
+m = Membership(expires_at=datetime(2027, 1, 1, tzinfo=UTC))
+```
+Existing ISO 8601 strings are still accepted as inputs, and outgoing API requests use ISO strings.
+Invalid date strings raise `ValueError` when the attribute is read.
+Filtering with `.where()` continues to take strings, as described below.
+
 #### Creating a monitoring list
 ```python
 from vilocify.models import MonitoringList, Subscription, Component, Membership
