@@ -1,6 +1,7 @@
 """jsonapy implements a lazy JSON:API client that supports cursor pagination."""
 
 #  SPDX-FileCopyrightText: 2026 Siemens AG
+#  SPDX-FileCopyrightText: 2026 Umut Alisoglu
 #  SPDX-License-Identifier: MIT
 
 import abc
@@ -132,11 +133,11 @@ class Serializer[TModel: "Model"]:
         if not isinstance(api_response, dict):
             raise DeserializationError("Received invalid JSON:API response")
 
-        links = api_response["links"]
+        links = api_response.get("links", {})
         if not isinstance(links, dict):
             raise DeserializationError("Received invalid JSON:API response. links is not an object")
 
-        next_link = links["next"]
+        next_link = links.get("next")
         if next_link is not None and not isinstance(next_link, str):
             raise DeserializationError("Received invalid JSON:API response. The next link is not a string")
 
