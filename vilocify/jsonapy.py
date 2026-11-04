@@ -6,6 +6,7 @@
 import abc
 import warnings
 from collections.abc import Callable, Iterable, Iterator
+from datetime import date
 from enum import Enum
 from itertools import islice
 from typing import Any, ClassVar, NamedTuple, Self
@@ -94,22 +95,32 @@ class Action(Enum):
 
 
 class Attribute[T]:
-    def __init__(self, api_attribute_name: str, serialize_on: tuple[Action, ...] = (Action.CREATE, Action.UPDATE)):
+    def __init__(
+        self,
+        api_attribute_name: str,
+        serialize_on: tuple[Action, ...] = (Action.CREATE, Action.UPDATE),
+        *,
+        decode: Callable[[Any], T] | None = None,
+        encode: Callable[[T], JSON] | None = None,
+    ):
         self.api_attribute_name = api_attribute_name
         self.serialize = serialize_on
+        self._decode = decode
+        self._encode = encode
 
     def __get__[TModel: "Model"](self, obj: TModel, objtype: type[TModel] | None = None) -> T:
         if self.api_attribute_name not in obj._jsonapi_attributes:
             obj.refresh()
 
-        return obj._jsonapi_attributes[self.api_attribute_name]
+        value = obj._jsonapi_attributes[self.api_attribute_name]
+        return self._decode(value) if self._decode is not None and value is not None else value
 
     def __set__[TModel: "Model"](self, obj: TModel, value: T):
         if self.serialize == ():
             raise AttributeError("Cannot set read-only attribute")
         if Action.UPDATE not in self.serialize and self.api_attribute_name in obj._jsonapi_attributes:
             raise AttributeError("Cannot set write-once attribute")
-        obj._jsonapi_attributes[self.api_attribute_name] = value
+        obj._jsonapi_attributes[self.api_attribute_name] = self._encode(value) if self._encode is not None else value
 
 
 class Serializer[TModel: "Model"]:
@@ -477,7 +488,7 @@ class Model[TModel: "Model"](metaclass=ModelMeta):
     _model_attribute_names: ClassVar[list[str]]
     _jsonapi_attribute_names: ClassVar[list[str]]
 
-    def __init__(self, **kwargs: str | int | list | dict | None):
+    def __init__(self, **kwargs: str | int | list | dict | date | None):
         self._id = None
         if "id" in kwargs:
             self._id = str(kwargs["id"])
