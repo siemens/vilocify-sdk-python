@@ -3,7 +3,13 @@
 #  SPDX-FileCopyrightText: 2026 Siemens AG
 #  SPDX-License-Identifier: MIT
 
+from datetime import date, datetime
+
 from vilocify.jsonapy import Action, Attribute, Model, RelationshipToMany, RelationshipToOne
+
+
+def _encode_date(value: date | str | None) -> str | None:
+    return value.isoformat() if isinstance(value, date) else value
 
 
 class Component(Model):
@@ -11,12 +17,12 @@ class Component(Model):
     name = Attribute[str | None]("name")
     version = Attribute[str | None]("version")
     url = Attribute[str | None]("url")
-    created_at = Attribute[str]("createdAt")
-    updated_at = Attribute[str]("updatedAt")
-    eol_on = Attribute[str | None]("endOfLifeOn")
+    created_at = Attribute[datetime]("createdAt", decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", decode=datetime.fromisoformat, encode=_encode_date)
+    eol_on = Attribute[date | None]("endOfLifeOn", decode=date.fromisoformat, encode=_encode_date)
     is_eol = Attribute[bool]("endOfLife")
     active = Attribute[bool]("active")
-    deactivated_at = Attribute[str | None]("deactivatedAt")
+    deactivated_at = Attribute[datetime | None]("deactivatedAt", decode=datetime.fromisoformat, encode=_encode_date)
     deactivation_reason = Attribute[str | None]("deactivationReason")
     tlp = Attribute[str]("tlp")
 
@@ -28,10 +34,10 @@ class Membership(Model):
     username = Attribute[str]("userName", serialize_on=(Action.CREATE,))
     email = Attribute[str]("userEmail", serialize_on=(Action.CREATE,))
     role = Attribute[str]("role", serialize_on=(Action.CREATE,))
-    expires_at = Attribute[str | None]("expiresAt")
+    expires_at = Attribute[datetime | None]("expiresAt", decode=datetime.fromisoformat, encode=_encode_date)
     invitation_state = Attribute[str]("invitationState", serialize_on=())
-    created_at = Attribute[str]("createdAt", serialize_on=())
-    updated_at = Attribute[str]("updatedAt", serialize_on=())
+    created_at = Attribute[datetime]("createdAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
 
 
 class ComponentRequest(Model):
@@ -44,8 +50,8 @@ class ComponentRequest(Model):
     component_url = Attribute[str | None]("componentUrl")
     state = Attribute[str]("state", serialize_on=())
     rejection_reasons = Attribute[list[str] | None]("rejectionReasons", serialize_on=())
-    created_at = Attribute[str]("createdAt", serialize_on=())
-    updated_at = Attribute[str]("updatedAt", serialize_on=())
+    created_at = Attribute[datetime]("createdAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
 
     component = RelationshipToOne(Component)
     membership = RelationshipToOne(Membership)
@@ -79,9 +85,9 @@ class Notification(Model):
     cvss = Attribute[str | None]("cvss")
     history = Attribute[list[dict]]("history")
     type = Attribute[str]("type")
-    third_party_published_on = Attribute[str]("thirdPartyPublishedOn")
-    created_at = Attribute[str]("createdAt")
-    updated_at = Attribute[str]("updatedAt")
+    third_party_published_on = Attribute[date]("thirdPartyPublishedOn", decode=date.fromisoformat, encode=_encode_date)
+    created_at = Attribute[datetime]("createdAt", decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", decode=datetime.fromisoformat, encode=_encode_date)
     tlp = Attribute[str]("tlp")
 
     vulnerabilities = RelationshipToMany(Vulnerability)
@@ -94,8 +100,8 @@ class MonitoringList(Model):
     name = Attribute[str]("name")
     comment = Attribute[str | None]("comment")
     active = Attribute[bool]("active")
-    created_at = Attribute[str]("createdAt", serialize_on=())
-    updated_at = Attribute[str]("updatedAt", serialize_on=())
+    created_at = Attribute[datetime]("createdAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
     group = Attribute[str | None]("group")
     internal = Attribute[bool]("internal")
 
@@ -109,8 +115,8 @@ class MonitoringList(Model):
 class Subscription(Model):
     role = Attribute[str]("role")
     priorities = Attribute[list[str]]("priorities")
-    created_at = Attribute[str]("createdAt", serialize_on=())
-    updated_at = Attribute[str]("updatedAt", serialize_on=())
+    created_at = Attribute[datetime]("createdAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", serialize_on=(), decode=datetime.fromisoformat, encode=_encode_date)
 
     membership = RelationshipToOne(Membership)
     monitoring_list = RelationshipToOne(MonitoringList)
@@ -118,5 +124,5 @@ class Subscription(Model):
 
 class Group(Model):
     name = Attribute[str]("name")
-    created_at = Attribute[str]("createdAt")
-    updated_at = Attribute[str]("updatedAt")
+    created_at = Attribute[datetime]("createdAt", decode=datetime.fromisoformat, encode=_encode_date)
+    updated_at = Attribute[datetime]("updatedAt", decode=datetime.fromisoformat, encode=_encode_date)
